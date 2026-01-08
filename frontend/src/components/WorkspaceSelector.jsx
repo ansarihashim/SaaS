@@ -68,7 +68,7 @@ export default function WorkspaceSelector() {
 
   // Safe access to activeWorkspace properties with fallbacks
   const workspaceName = activeWorkspace?.name || 'Workspace';
-  const workspaceRole = activeWorkspace?.role || 'Member';
+  const workspaceRole = activeWorkspace?.role || 'Loading...';
   const workspaceInitial = workspaceName.charAt(0).toUpperCase() || 'W';
 
   return (
@@ -129,7 +129,7 @@ export default function WorkspaceSelector() {
               
               const isActive = activeWorkspace?.id === workspace.id;
               const wsName = workspace.name || 'Unnamed';
-              const wsRole = workspace.role || 'Member';
+              const wsRole = workspace.role;
               const wsInitial = wsName.charAt(0).toUpperCase() || 'W';
 
               return (

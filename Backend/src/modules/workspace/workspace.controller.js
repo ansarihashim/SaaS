@@ -73,7 +73,7 @@ exports.createWorkspace = async (req, res) => {
       });
 
       // Add creator as OWNER
-      await tx.workspaceUser.create({
+      const workspaceUser = await tx.workspaceUser.create({
         data: {
           userId: userId,
           workspaceId: workspace.id,
@@ -81,12 +81,20 @@ exports.createWorkspace = async (req, res) => {
         }
       });
 
-      return workspace;
+      return {
+        workspace,
+        role: workspaceUser.role
+      };
     });
 
     res.status(201).json({
       message: "Workspace created successfully",
-      workspace: result
+      workspace: {
+        id: result.workspace.id,
+        name: result.workspace.name,
+        role: result.role,
+        joinedAt: result.workspace.createdAt
+      }
     });
 
   } catch (error) {

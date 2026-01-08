@@ -71,10 +71,10 @@ export const WorkspaceProvider = ({ children }) => {
       const response = await axios.post('/workspaces', { name });
       const newWorkspace = response.data.workspace;
       
-      // Add to workspaces list
+      // Add to workspaces list with role from backend
       setWorkspaces(prev => [...prev, newWorkspace]);
       
-      // Set as active workspace
+      // Set as active workspace with role
       setActiveWorkspace(newWorkspace);
       localStorage.setItem('activeWorkspaceId', newWorkspace.id);
       
