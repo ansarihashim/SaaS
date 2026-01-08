@@ -30,6 +30,11 @@ export default function Tasks() {
   }, [activeWorkspace, selectedProject]);
 
   const fetchProjects = async () => {
+    if (!activeWorkspace?.id) {
+      setProjects([]);
+      return;
+    }
+
     try {
       const response = await projectsAPI.getAll(activeWorkspace.id);
       setProjects(response.data.projects || response.data);
@@ -39,7 +44,11 @@ export default function Tasks() {
   };
 
   const fetchTasks = async () => {
-    if (!activeWorkspace) return;
+    if (!activeWorkspace?.id) {
+      setTasks([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -52,22 +61,28 @@ export default function Tasks() {
         const projectsResponse = await projectsAPI.getAll(activeWorkspace.id);
         const projectsList = projectsResponse.data.projects || projectsResponse.data;
         
-        const tasksPromises = projectsList.map(project =>
-          tasksAPI.getByProject(project.id).catch(() => ({ data: [] }))
-        );
-        
-        const tasksResponses = await Promise.all(tasksPromises);
-        allTasks = tasksResponses.flatMap(response => response.data.tasks || response.data || []);
-      } else {
-        // Fetch tasks from selected project
-        const response = await tasksAPI.getByProject(selectedProject);
-        allTasks = response.data.tasks || response.data || [];
+        // Only fetch tasks if there are projects
+        if (projectsList && projectsList.length > 0) {
+          const tasksPromises = projectsList.map(project =>
+            tasksAPI.getByProject(project.id).catch(() => ({ data: [] }))
+          );
+          
+          const tasksResponses = await Promise.all(tasksPromises);
+          allTasks = tasksResponses.flatMap(response => response.data.tasks || response.data || []);
+        }
+      } else if (selectedProject) {
+        // Fetch tasks from selected project - validate projectId
+        const projectId = parseInt(selectedProject);
+        if (!isNaN(projectId)) {
+          const response = await tasksAPI.getByProject(projectId);
+          allTasks = response.data.tasks || response.data || [];
+        }
       }
 
       setTasks(allTasks);
     } catch (err) {
       console.error("Error fetching tasks:", err);
-      setError(err.response?.data?.message || "Failed to load tasks");
+      setError(err.response?.data?.message || "Server error");
     } finally {
       setLoading(false);
     }
@@ -124,11 +139,11 @@ export default function Tasks() {
     }
   };
 
-  const handleDeleteTask = async (taskId) => {
-    if (!window.confirm("Are you sure you want to delete this task?")) return;
+  const handleDeleteTask = async (taskId, taskTitle) => {
+    if (!window.confirm(`Are you sure you want to delete "${taskTitle}"?`)) return;
 
     try {
-      await tasksAPI.softDelete(taskId);
+      await tasksAPI.delete(taskId);
       await fetchTasks();
     } catch (err) {
       console.error("Error deleting task:", err);
@@ -444,7 +459,7 @@ function TaskCard({ task, onStatusChange, onDelete, onRestore, onEdit, canManage
                   ) : (
                     <button
                       onClick={() => {
-                        onDelete(task.id);
+                        onDelete(task.id, task.title);
                         setShowMenu(false);
                       }}
                       className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"

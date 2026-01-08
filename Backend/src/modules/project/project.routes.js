@@ -34,4 +34,13 @@ router.patch(
   projectController.updateProject
 );
 
+/**
+ * Delete project (soft delete) → OWNER / ADMIN
+ */
+router.patch(
+  "/:projectId/delete",
+  authMiddleware,
+  projectController.deleteProject
+);
+
 module.exports = router;

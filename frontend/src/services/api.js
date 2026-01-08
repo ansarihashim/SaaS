@@ -5,7 +5,7 @@ export const projectsAPI = {
   getAll: (workspaceId) => api.get(`/workspaces/${workspaceId}/projects`),
   create: (workspaceId, data) => api.post(`/workspaces/${workspaceId}/projects`, data),
   update: (projectId, data) => api.patch(`/projects/${projectId}`, data),
-  delete: (projectId) => api.delete(`/projects/${projectId}`),
+  delete: (projectId) => api.patch(`/projects/${projectId}/delete`),
 };
 
 // ==================== TASKS ====================
@@ -15,7 +15,7 @@ export const tasksAPI = {
   update: (taskId, data) => api.patch(`/tasks/${taskId}`, data),
   updateStatus: (taskId, status) => api.patch(`/tasks/${taskId}/status`, { status }),
   updateAssignee: (taskId, assigneeId) => api.patch(`/tasks/${taskId}/assignee`, { assigneeId }),
-  softDelete: (taskId) => api.patch(`/tasks/${taskId}/delete`),
+  delete: (taskId) => api.patch(`/tasks/${taskId}/delete`),
   restore: (taskId) => api.patch(`/tasks/${taskId}/restore`),
 };
 

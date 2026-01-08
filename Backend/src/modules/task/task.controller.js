@@ -83,6 +83,10 @@ exports.getTasksByProject = async (req, res) => {
     const projectId = parseInt(req.params.projectId);
     const userId = req.userId;
 
+    if (!projectId || isNaN(projectId)) {
+      return res.status(400).json({ message: "Invalid project ID" });
+    }
+
     // Pagination defaults
     const page = parseInt(req.query.page) || 1;
     const limit = parseInt(req.query.limit) || 10;
@@ -116,7 +120,7 @@ exports.getTasksByProject = async (req, res) => {
     }
 
     // 3️⃣ Build dynamic WHERE clause
-    const where = { projectId,deletedAt: null };
+    const where = { projectId, deletedAt: null };
 
     if (status) {
       where.status = status;
@@ -152,8 +156,9 @@ exports.getTasksByProject = async (req, res) => {
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: "Server error" });
+    console.error('Error fetching tasks:', error);
+    console.error('Prisma error:', error.message);
+    res.status(500).json({ message: error.message || "Server error" });
   }
 };
 
@@ -441,19 +446,18 @@ exports.deleteTask = async (req, res) => {
       data: { deletedAt: new Date() }
     });
 
-await prisma.activityLog.create({
-  data: {
-    action: "TASK_DELETED",
-    entityType: "TASK",
-    entityId: taskId,
-    message: "Task soft deleted",
-    userId,
-    workspaceId: task.project.workspaceId
-  }
-});
+    await prisma.activityLog.create({
+      data: {
+        action: "TASK_DELETED",
+        entityType: "TASK",
+        entityId: taskId,
+        message: `Task "${task.title}" deleted`,
+        userId,
+        workspaceId: task.project.workspaceId
+      }
+    });
 
-
-    res.json({ message: "Task deleted (soft delete)" });
+    res.json({ message: "Task deleted successfully" });
 
   } catch (error) {
     console.error(error);
@@ -504,17 +508,16 @@ exports.restoreTask = async (req, res) => {
       data: { deletedAt: null }
     });
 
-await prisma.activityLog.create({
-  data: {
-    action: "TASK_RESTORED",
-    entityType: "TASK",
-    entityId: taskId,
-    message: "Task restored",
-    userId,
-    workspaceId: task.project.workspaceId
-  }
-});
-
+    await prisma.activityLog.create({
+      data: {
+        action: "TASK_RESTORED",
+        entityType: "TASK",
+        entityId: taskId,
+        message: `Task "${task.title}" restored`,
+        userId,
+        workspaceId: task.project.workspaceId
+      }
+    });
 
     res.json({ message: "Task restored successfully" });
 

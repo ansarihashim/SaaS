@@ -17,6 +17,13 @@ router.get(
   dashboardController.getWorkspaceDashboard
 );
 
+router.get(
+  "/:workspaceId/users",
+  authMiddleware,
+  requireWorkspaceRole(["OWNER", "ADMIN", "MEMBER"]),
+  workspaceController.getWorkspaceUsers
+);
+
 router.post(
   "/:workspaceId/invite",
   authMiddleware,

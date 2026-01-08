@@ -4,7 +4,7 @@ import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { projectsAPI } from "../services/api";
 import CreateProjectModal from "../components/modals/CreateProjectModal";
-import { FiPlus } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2 } from "react-icons/fi";
 
 export default function Projects() {
   const { activeWorkspace, loading: workspaceLoading } = useWorkspace();
@@ -20,7 +20,11 @@ export default function Projects() {
   }, [activeWorkspace]);
 
   const fetchProjects = async () => {
-    if (!activeWorkspace) return;
+    if (!activeWorkspace?.id) {
+      setProjects([]);
+      setLoading(false);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -36,6 +40,11 @@ export default function Projects() {
   };
 
   const handleCreateProject = async (formData) => {
+    if (!activeWorkspace?.id) {
+      alert("No workspace selected");
+      return;
+    }
+
     try {
       setCreating(true);
       if (editingProject) {
@@ -57,6 +66,20 @@ export default function Projects() {
   const handleEditProject = (project) => {
     setEditingProject(project);
     setShowCreateModal(true);
+  };
+
+  const handleDeleteProject = async (projectId, projectName) => {
+    if (!window.confirm(`Are you sure you want to delete "${projectName}"?`)) {
+      return;
+    }
+
+    try {
+      await projectsAPI.delete(projectId);
+      await fetchProjects();
+    } catch (err) {
+      console.error("Error deleting project:", err);
+      alert(err.response?.data?.message || "Failed to delete project");
+    }
   };
 
   const handleCloseModal = () => {
@@ -213,7 +236,7 @@ export default function Projects() {
   );
 }
 
-function ProjectCard({ project, onEdit }) {
+function ProjectCard({ project, onEdit, onDelete }) {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -224,7 +247,7 @@ function ProjectCard({ project, onEdit }) {
   };
 
   return (
-    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg hover:border-purple-300 hover:-translate-y-1 transition-all duration-200 group">
+    <div className="bg-white rounded-lg border border-gray-200 p-6 hover:shadow-lg hover:border-purple-300 hover:-translate-y-1 transition-all duration-200 group relative">
       {/* Project Header */}
       <div className="flex items-start justify-between mb-4">
         <div className="flex-1">
@@ -232,20 +255,32 @@ function ProjectCard({ project, onEdit }) {
             <h3 className="text-lg font-semibold text-gray-900 mb-1">
               {project.name}
             </h3>
-            {onEdit && (
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onEdit();
-                }}
-                className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-100 rounded transition-all"
-                title="Edit Project"
-              >
-                <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-                </svg>
-              </button>
-            )}
+            <div className="flex items-center gap-1">
+              {onEdit && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onEdit();
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-gray-100 rounded transition-all"
+                  title="Edit Project"
+                >
+                  <FiEdit2 className="w-4 h-4 text-gray-600" />
+                </button>
+              )}
+              {onDelete && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    onDelete();
+                  }}
+                  className="opacity-0 group-hover:opacity-100 p-1.5 hover:bg-red-50 rounded transition-all"
+                  title="Delete Project"
+                >
+                  <FiTrash2 className="w-4 h-4 text-red-600" />
+                </button>
+              )}
+            </div>
           </div>
           <p className="text-sm text-gray-500">
             {project.description || "No description provided"}

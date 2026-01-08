@@ -189,6 +189,51 @@ catch (err){
   }
 };
 
+/**
+ * GET WORKSPACE USERS
+ * Returns all members of a specific workspace
+ */
+exports.getWorkspaceUsers = async (req, res) => {
+  try {
+    const workspaceId = parseInt(req.params.workspaceId);
+
+    if (!workspaceId || isNaN(workspaceId)) {
+      return res.status(400).json({ message: "Invalid workspace ID" });
+    }
+
+    const members = await prisma.workspaceUser.findMany({
+      where: { workspaceId },
+      include: {
+        user: {
+          select: {
+            id: true,
+            name: true,
+            email: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+
+    const users = members.map(member => ({
+      id: member.user.id,
+      name: member.user.name,
+      email: member.user.email,
+      role: member.role,
+      joinedAt: member.createdAt
+    }));
+
+    res.json({ users });
+
+  } catch (error) {
+    console.error('Error fetching workspace users:', error);
+    console.error('Prisma error:', error.message);
+    res.status(500).json({ message: error.message || "Server error" });
+  }
+};
+
 exports.getWorkspaceDashboard = async (req, res, next) => {
   try {
     const workspaceId = parseInt(req.params.workspaceId);

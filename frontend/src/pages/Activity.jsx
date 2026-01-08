@@ -272,14 +272,20 @@ function ActivityItem({ activity }) {
 
 // Helper Functions
 function getActivityIcon(action) {
-  switch (action) {
+  // Extract the action type (e.g., "TASK_DELETED" -> "DELETED")
+  const actionType = action?.includes('_') ? action.split('_').pop() : action;
+  
+  switch (actionType) {
     case "CREATED":
       return <FiPlus className="w-4 h-4 text-white" />;
     case "UPDATED":
+    case "REASSIGNED":
+    case "STATUS":
       return <FiEdit className="w-4 h-4 text-white" />;
     case "DELETED":
       return <FiTrash2 className="w-4 h-4 text-white" />;
     case "COMPLETED":
+    case "RESTORED":
       return <FiCheckCircle className="w-4 h-4 text-white" />;
     default:
       return <FiActivity className="w-4 h-4 text-white" />;
@@ -287,28 +293,41 @@ function getActivityIcon(action) {
 }
 
 function getActivityIconColor(action) {
-  switch (action) {
+  // Extract the action type (e.g., "TASK_DELETED" -> "DELETED")
+  const actionType = action?.includes('_') ? action.split('_').pop() : action;
+  
+  switch (actionType) {
     case "CREATED":
       return "bg-green-500";
     case "UPDATED":
+    case "REASSIGNED":
+    case "STATUS":
       return "bg-blue-500";
     case "DELETED":
       return "bg-red-500";
     case "COMPLETED":
       return "bg-purple-500";
+    case "RESTORED":
+      return "bg-emerald-500";
     default:
       return "bg-gray-500";
   }
 }
 
 function formatActionText(action) {
+  // Extract the action type (e.g., "TASK_DELETED" -> "DELETED")
+  const actionType = action?.includes('_') ? action.split('_').pop() : action;
+  
   const actionMap = {
     CREATED: "created",
     UPDATED: "updated",
     DELETED: "deleted",
     COMPLETED: "completed",
+    RESTORED: "restored",
+    REASSIGNED: "reassigned",
+    STATUS: "updated status",
   };
-  return actionMap[action] || action.toLowerCase();
+  return actionMap[actionType] || actionType?.toLowerCase() || "performed action";
 }
 
 function formatTime(timestamp) {

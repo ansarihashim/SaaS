@@ -33,7 +33,7 @@ export default function Team() {
       setMembers(response.data.users || []);
     } catch (err) {
       console.error("Error fetching team members:", err);
-      setError(err.response?.data?.message || "Server error");
+      setError(err.response?.data?.message || "Failed to load team members");
       setMembers([]);
     } finally {
       setLoading(false);
@@ -86,30 +86,28 @@ export default function Team() {
     );
   }
 
-  // Check if user can invite members (OWNER or ADMIN only)
-  const canInvite = activeWorkspace.role === "OWNER" || activeWorkspace.role === "ADMIN";
+  const canInvite =
+    activeWorkspace.role === "OWNER" || activeWorkspace.role === "ADMIN";
 
   return (
     <DashboardLayout>
       <Topbar
-        title="Team Members"
-        subtitle={`Manage team in ${activeWorkspace.name}`}
+        title="Team"
+        subtitle={`Manage members in ${activeWorkspace.name}`}
       />
 
-      {/* Invite Member Modal */}
       <InviteMemberModal
         isOpen={showInviteModal}
         onClose={() => setShowInviteModal(false)}
         onSubmit={handleInvite}
         loading={inviting}
-        currentWorkspace={activeWorkspace}
       />
 
       <div className="p-6">
-        {/* Invite Member Button */}
+        {/* Invite Button */}
         {canInvite && (
           <div className="mb-6">
-            <button 
+            <button
               onClick={() => setShowInviteModal(true)}
               className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200 flex items-center gap-2"
             >
@@ -132,25 +130,46 @@ export default function Team() {
         {/* Error State */}
         {!loading && error && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Team</h3>
-            <p className="text-red-700">{error}</p>
+            <div className="flex items-center gap-3">
+              <svg
+                className="w-6 h-6 text-red-600 shrink-0"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+                />
+              </svg>
+              <div>
+                <h3 className="text-red-800 font-semibold">Error Loading Team</h3>
+                <p className="text-red-600 text-sm mt-1">{error}</p>
+              </div>
+            </div>
           </div>
         )}
 
         {/* Empty State */}
-        {!loading && !error && members.length === 0 && (
-          <div className="bg-gray-50 border-2 border-dashed border-gray-300 rounded-lg p-12 text-center">
-            <FiUser className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">No Team Members Yet</h3>
-            <p className="text-gray-500 mb-4">
+        {!loading && !error && (!members || members.length === 0) && (
+          <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
+              <FiUser className="w-8 h-8 text-gray-400" />
+            </div>
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              No Team Members
+            </h3>
+            <p className="text-gray-500 mb-6">
               {canInvite
-                ? "Invite team members to collaborate on projects."
-                : "Waiting for team members to join."}
+                ? "Invite team members to collaborate on this workspace."
+                : "No team members have been added yet."}
             </p>
             {canInvite && (
               <button
                 onClick={() => setShowInviteModal(true)}
-                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 transition-colors"
+                className="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200"
               >
                 Invite Your First Member
               </button>
@@ -158,9 +177,9 @@ export default function Team() {
           </div>
         )}
 
-        {/* Team Members Table */}
-        {!loading && !error && members.length > 0 && (
-          <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        {/* Team Members List */}
+        {!loading && !error && members && members.length > 0 && (
+          <div className="bg-white rounded-lg border border-gray-200 overflow-hidden">
             <div className="overflow-x-auto">
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
@@ -181,7 +200,7 @@ export default function Team() {
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
                   {members.map((member) => (
-                    <MemberRow key={member.id} member={member} />
+                    <MemberRow key={member.userId || member.id} member={member} />
                   ))}
                 </tbody>
               </table>
@@ -194,52 +213,53 @@ export default function Team() {
 }
 
 function MemberRow({ member }) {
-  // Generate avatar initials
-  const getInitials = (name) => {
-    if (!name) return "?";
-    const parts = name.split(" ");
-    if (parts.length >= 2) {
-      return (parts[0][0] + parts[1][0]).toUpperCase();
-    }
-    return name.substring(0, 2).toUpperCase();
+  const user = member.user || member;
+  const role = member.role || "MEMBER";
+
+  const roleColors = {
+    OWNER: "bg-purple-100 text-purple-800",
+    ADMIN: "bg-blue-100 text-blue-800",
+    MEMBER: "bg-gray-100 text-gray-800",
   };
 
-  // Role badge colors
-  const getRoleBadge = (role) => {
-    const badges = {
-      OWNER: "bg-purple-100 text-purple-800",
-      ADMIN: "bg-blue-100 text-blue-800",
-      MEMBER: "bg-gray-100 text-gray-800",
-    };
-    return badges[role] || badges.MEMBER;
+  const getInitials = (name) => {
+    if (!name) return "?";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .toUpperCase()
+      .substring(0, 2);
   };
 
   return (
     <tr className="hover:bg-gray-50 transition-colors">
       <td className="px-6 py-4 whitespace-nowrap">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-purple-500 to-purple-700 flex items-center justify-center text-white font-semibold text-sm shrink-0">
-            {getInitials(member.name)}
+            {getInitials(user.name)}
           </div>
-          <div>
-            <div className="text-sm font-medium text-gray-900">{member.name}</div>
+          <div className="ml-4">
+            <div className="text-sm font-medium text-gray-900">
+              {user.name || "Unknown"}
+            </div>
           </div>
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <FiMail className="w-4 h-4" />
-          {member.email}
+          {user.email || "No email"}
         </div>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
         <span
-          className={`inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-medium ${getRoleBadge(
-            member.role
-          )}`}
+          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+            roleColors[role] || roleColors.MEMBER
+          }`}
         >
           <FiShield className="w-3 h-3" />
-          {member.role}
+          {role}
         </span>
       </td>
       <td className="px-6 py-4 whitespace-nowrap">
@@ -261,40 +281,6 @@ function InviteMemberModal({ isOpen, onClose, onSubmit, loading, currentWorkspac
   });
   const [errors, setErrors] = useState({});
 
-  useEffect(() => {
-    if (isOpen) {
-      fetchUserWorkspaces();
-    }
-  }, [isOpen]);
-
-  useEffect(() => {
-    // Set current workspace as default when workspaces load
-    if (currentWorkspace && workspaces.length > 0 && !formData.workspaceId) {
-      setFormData(prev => ({ ...prev, workspaceId: currentWorkspace.id }));
-    }
-  }, [currentWorkspace, workspaces, formData.workspaceId]);
-
-  const fetchUserWorkspaces = async () => {
-    try {
-      setLoadingWorkspaces(true);
-      const response = await workspaceAPI.getMy();
-      // Filter only workspaces where user is OWNER or ADMIN
-      const adminWorkspaces = (response.data.workspaces || []).filter(
-        ws => ws.role === "OWNER" || ws.role === "ADMIN"
-      );
-      setWorkspaces(adminWorkspaces);
-      
-      // Set current workspace as default
-      if (currentWorkspace) {
-        setFormData(prev => ({ ...prev, workspaceId: currentWorkspace.id }));
-      }
-    } catch (err) {
-      console.error("Error fetching workspaces:", err);
-    } finally {
-      setLoadingWorkspaces(false);
-    }
-  };
-
   const handleSubmit = (e) => {
     e.preventDefault();
 
@@ -303,9 +289,6 @@ function InviteMemberModal({ isOpen, onClose, onSubmit, loading, currentWorkspac
 
     // Validation
     const newErrors = {};
-    if (!formData.workspaceId) {
-      newErrors.workspaceId = "Please select a workspace";
-    }
     if (!formData.email || !formData.email.trim()) {
       newErrors.email = "Email is required";
     } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
@@ -318,18 +301,13 @@ function InviteMemberModal({ isOpen, onClose, onSubmit, loading, currentWorkspac
     }
 
     onSubmit({
-      workspaceId: parseInt(formData.workspaceId),
       email: formData.email.trim(),
       role: formData.role,
     });
   };
 
   const handleClose = () => {
-    setFormData({ 
-      workspaceId: currentWorkspace?.id || "", 
-      email: "", 
-      role: "MEMBER" 
-    });
+    setFormData({ email: "", role: "MEMBER" });
     setErrors({});
     onClose();
   };
@@ -352,42 +330,6 @@ function InviteMemberModal({ isOpen, onClose, onSubmit, loading, currentWorkspac
 
         {/* Form */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          {/* Workspace Selection */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Workspace <span className="text-red-500">*</span>
-            </label>
-            {loadingWorkspaces ? (
-              <div className="text-sm text-gray-500">Loading workspaces...</div>
-            ) : (
-              <select
-                value={formData.workspaceId}
-                onChange={(e) =>
-                  setFormData({ ...formData, workspaceId: e.target.value })
-                }
-                className={`w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 ${
-                  errors.workspaceId ? "border-red-500" : "border-gray-300"
-                }`}
-                disabled={loading || workspaces.length === 0}
-              >
-                <option value="">Choose a workspace...</option>
-                {workspaces.map((ws) => (
-                  <option key={ws.id} value={ws.id}>
-                    {ws.name} ({ws.role})
-                  </option>
-                ))}
-              </select>
-            )}
-            {errors.workspaceId && (
-              <p className="text-red-500 text-sm mt-1">{errors.workspaceId}</p>
-            )}
-            {workspaces.length === 0 && !loadingWorkspaces && (
-              <p className="text-yellow-600 text-sm mt-1">
-                You don't have admin access to any workspace
-              </p>
-            )}
-          </div>
-
           {/* Email */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -444,7 +386,7 @@ function InviteMemberModal({ isOpen, onClose, onSubmit, loading, currentWorkspac
             <button
               type="submit"
               className="px-6 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-              disabled={loading || workspaces.length === 0}
+              disabled={loading}
             >
               {loading ? "Inviting..." : "Send Invite"}
             </button>
