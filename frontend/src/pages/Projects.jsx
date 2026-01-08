@@ -74,11 +74,19 @@ export default function Projects() {
     }
 
     try {
+      // Optimistically remove from UI
+      setProjects(prev => prev.filter(p => p.id !== projectId));
+      
+      // Call API to soft delete
       await projectsAPI.delete(projectId);
-      await fetchProjects();
     } catch (err) {
       console.error("Error deleting project:", err);
-      alert(err.response?.data?.message || "Failed to delete project");
+      
+      // Restore on error
+      await fetchProjects();
+      
+      const errorMessage = err.response?.data?.message || "Failed to delete project";
+      alert(errorMessage);
     }
   };
 
@@ -227,6 +235,7 @@ export default function Projects() {
               key={project.id} 
               project={project}
               onEdit={canCreateProject ? () => handleEditProject(project) : null}
+              onDelete={canCreateProject ? () => handleDeleteProject(project.id, project.name) : null}
             />
           ))}
         </div>
