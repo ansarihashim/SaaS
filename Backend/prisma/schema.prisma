@@ -30,13 +30,15 @@ model Workspace {
 }
 
 model WorkspaceUser {
-  id          Int  @id @default(autoincrement())
+  id          Int      @id @default(autoincrement())
   role        Role
   userId      Int
   workspaceId Int
 
-  user      User      @relation(fields: [userId], references: [id])
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  createdAt   DateTime @default(now())
+
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
 
   @@unique([userId, workspaceId])
 }
