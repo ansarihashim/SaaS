@@ -139,47 +139,57 @@ exports.inviteUser = async (req, res) => {
       });
     });
 
-    // Fetch workspace only for email content
-const workspace = await prisma.workspace.findUnique({
-  where: { id: workspaceId }
-});
+    // Fetch workspace and inviter info for email
+    const workspace = await prisma.workspace.findUnique({
+      where: { id: workspaceId }
+    });
 
-const inviter = await prisma.user.findUnique({
-  where: { id: req.userId },
-  select: { name: true, email: true }
-});
+    const inviter = await prisma.user.findUnique({
+      where: { id: req.userId },
+      select: { name: true, email: true }
+    });
 
+    // Attempt to send invitation email
+    console.log(`📨 Sending invitation email for workspace: ${workspace.name}`);
+    const emailResult = await sendEmail({
+      to: email,
+      subject: `${inviter.name} invited you to join ${workspace.name}`,
+      html: `
+        <div style="font-family: Arial, sans-serif; line-height: 1.6;">
+          <h2>${inviter.name} invited you</h2>
 
-try{
-await sendEmail({
-  to: email,
-  subject: `${inviter.name} invited you to join ${workspace.name}`,
-  html: `
-    <div style="font-family: Arial, sans-serif; line-height: 1.6;">
-      <h2>${inviter.name} invited you</h2>
+          <p>
+            <strong>${inviter.name}</strong> (${inviter.email}) has invited you
+            to join the workspace <strong>${workspace.name}</strong>.
+          </p>
 
-      <p>
-        <strong>${inviter.name}</strong> (${inviter.email}) has invited you
-        to join the workspace <strong>${workspace.name}</strong>.
-      </p>
+          <p>
+            You can now access this workspace by logging into your account.
+          </p>
 
-      
-      <hr />
+          <hr />
 
-      <p style="font-size: 12px; color: #777;">
-        This invitation was sent via SaaS App.
-      </p>
-    </div>
-  `
-});
-}
+          <p style="font-size: 12px; color: #777;">
+            This invitation was sent via SaaS App.
+          </p>
+        </div>
+      `
+    });
 
-catch (err){
-  console.error("Email failed:",err.message);
+    if (!emailResult.success) {
+      console.error(`⚠️  User added to workspace but email delivery failed`);
+      return res.json({
+        message: "User invited successfully",
+        emailSent: false,
+        emailError: "Invitation email could not be sent"
+      });
+    }
 
-}
-
-    res.json({ message: "User invited successfully" });
+    console.log(`✅ User invited and email sent successfully`);
+    res.json({
+      message: "User invited successfully",
+      emailSent: true
+    });
 
   } catch (error) {
     if (error.message === "User already in workspace") {

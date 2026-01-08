@@ -43,11 +43,18 @@ export default function Team() {
   const handleInvite = async (formData) => {
     try {
       setInviting(true);
-      await teamAPI.inviteMember(formData.workspaceId, {
+      const response = await teamAPI.inviteMember(formData.workspaceId, {
         email: formData.email,
         role: formData.role
       });
       setShowInviteModal(false);
+      
+      // Check if email was sent successfully
+      if (response.data.emailSent === false) {
+        alert(`✅ User added to workspace\n\n⚠️ Warning: ${response.data.emailError || 'Invitation email could not be sent'}\n\nPlease notify the user manually.`);
+      } else {
+        alert('✅ User invited successfully! Invitation email sent.');
+      }
       
       // Refresh members if invited to current workspace
       if (formData.workspaceId === activeWorkspace.id) {
