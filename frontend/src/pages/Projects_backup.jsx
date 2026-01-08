@@ -89,9 +89,10 @@ export default function Projects() {
         </div>
       </DashboardLayout>
     );
-  }
-
-  // Check if user can create projects (OWNER or ADMIN only)
+  }handleCloseModal}
+        onSubmit={handleCreateProject}
+        loading={creating}
+        project={editingProjecteate projects (OWNER or ADMIN only)
   const canCreateProject = activeWorkspace.role === "OWNER" || activeWorkspace.role === "ADMIN";
 
   return (
@@ -104,10 +105,9 @@ export default function Projects() {
       {/* Create Project Modal */}
       <CreateProjectModal
         isOpen={showCreateModal}
-        onClose={handleCloseModal}
+        onClose={() => setShowCreateModal(false)}
         onSubmit={handleCreateProject}
         loading={creating}
-        project={editingProject}
       />
 
       <div className="p-6">
@@ -139,7 +139,7 @@ export default function Projects() {
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
           <div className="flex items-center gap-3">
             <svg
-              className="w-6 h-6 text-red-600 shrink-0"
+              className="w-6 h-6 text-red-600 flex-shrink-0"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -199,21 +199,17 @@ export default function Projects() {
       {/* Projects Grid */}
       {!loading && !error && projects.length > 0 && (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {projects.map((project) => (
-            <ProjectCard 
+          {projects.map((
               key={project.id} 
               project={project}
               onEdit={canCreateProject ? () => handleEditProject(project) : null}
-            />
+           
+            <ProjectCard key={project.id} project={project} />
           ))}
         </div>
       )}
       </div>
-    </DashboardLayout>
-  );
-}
-
-function ProjectCard({ project, onEdit }) {
+    </DashboardLayout>, onEdit }) {
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("en-US", {
@@ -246,7 +242,11 @@ function ProjectCard({ project, onEdit }) {
                 </svg>
               </button>
             )}
-          </div>
+          </divssName="flex items-start justify-between mb-4">
+        <div className="flex-1">
+          <h3 className="text-lg font-semibold text-gray-900 mb-1">
+            {project.name}
+          </h3>
           <p className="text-sm text-gray-500">
             {project.description || "No description provided"}
           </p>

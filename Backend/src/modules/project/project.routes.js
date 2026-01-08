@@ -25,4 +25,13 @@ router.get(
   projectController.getProjects
 );
 
+/**
+ * Update project → OWNER / ADMIN
+ */
+router.patch(
+  "/:projectId",
+  authMiddleware,
+  projectController.updateProject
+);
+
 module.exports = router;

@@ -239,6 +239,76 @@ await prisma.activityLog.create({
 };
 
 /*
+ * UPDATE TASK
+ * OWNER / ADMIN only
+ */
+exports.updateTask = async (req, res) => {
+  try {
+    const taskId = parseInt(req.params.taskId);
+    const userId = req.userId;
+    const { title, description, priority } = req.body;
+
+    // 1️⃣ Resolve task → project → workspace
+    const task = await prisma.task.findUnique({
+      where: { id: taskId },
+      include: {
+        project: {
+          select: { workspaceId: true }
+        }
+      }
+    });
+
+    if (!task) {
+      return res.status(404).json({ message: "Task not found" });
+    }
+
+    // 2️⃣ Check workspace membership
+    const membership = await prisma.workspaceUser.findUnique({
+      where: {
+        userId_workspaceId: {
+          userId,
+          workspaceId: task.project.workspaceId
+        }
+      }
+    });
+
+    if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+      return res.status(403).json({ message: "Not allowed to update task" });
+    }
+
+    // 3️⃣ Update task
+    const updatedTask = await prisma.task.update({
+      where: { id: taskId },
+      data: {
+        ...(title && { title }),
+        ...(description !== undefined && { description }),
+        ...(priority && { priority })
+      }
+    });
+
+    await prisma.activityLog.create({
+      data: {
+        action: "TASK_UPDATED",
+        entityType: "TASK",
+        entityId: updatedTask.id,
+        message: `Task "${updatedTask.title}" updated`,
+        userId,
+        workspaceId: task.project.workspaceId
+      }
+    });
+
+    res.json({
+      message: "Task updated successfully",
+      task: updatedTask
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
+
+/*
  * REASSIGN TASK
  * OWNER / ADMIN only
  */

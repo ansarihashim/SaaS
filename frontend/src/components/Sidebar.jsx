@@ -1,28 +1,43 @@
 import { NavLink } from "react-router-dom";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { useState } from "react";
+import { FiHome, FiFolder, FiCheckSquare, FiActivity, FiUsers } from "react-icons/fi";
 
 const navItems = [
-  { name: "Dashboard", path: "/" },
-  { name: "Projects", path: "/projects" },
-  { name: "Tasks", path: "/tasks" },
-  { name: "Activity", path: "/activity" },
-  { name: "Team", path: "/team" },
+  { name: "Dashboard", path: "/", icon: FiHome },
+  { name: "Projects", path: "/projects", icon: FiFolder },
+  { name: "Tasks", path: "/tasks", icon: FiCheckSquare },
+  { name: "Activity", path: "/activity", icon: FiActivity },
+  { name: "Team", path: "/team", icon: FiUsers },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ collapsed }) {
   const { workspaces, activeWorkspace, selectWorkspace } = useWorkspace();
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
 
   return (
-    <aside className="hidden md:block relative w-64 bg-white border-r min-h-screen px-4 py-6">
+    <aside 
+      className={`hidden md:block relative bg-white border-r min-h-screen transition-all duration-300 ease-in-out ${
+        collapsed ? 'w-20' : 'w-64'
+      } px-4 py-6`}
+    >
       {/* Logo */}
-      <h1 className="text-2xl font-bold text-purple-600 mb-6">
-        TaskFlow
-      </h1>
+      {!collapsed && (
+        <h1 className="text-2xl font-bold text-purple-600 mb-6">
+          TaskFlow
+        </h1>
+      )}
+      
+      {collapsed && (
+        <div className="flex justify-center mb-6">
+          <div className="w-10 h-10 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-lg">
+            T
+          </div>
+        </div>
+      )}
 
       {/* Workspace Selector */}
-      {activeWorkspace && (
+      {activeWorkspace && !collapsed && (
         <div className="mb-8 relative">
           <button
             onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
@@ -70,36 +85,58 @@ export default function Sidebar() {
         </div>
       )}
 
+      {/* Collapsed Workspace Icon */}
+      {activeWorkspace && collapsed && (
+        <div className="mb-8 flex justify-center">
+          <div className="w-10 h-10 rounded bg-purple-600 text-white flex items-center justify-center font-semibold text-sm">
+            {activeWorkspace.name.charAt(0).toUpperCase()}
+          </div>
+        </div>
+      )}
+
       {/* Navigation */}
       <nav className="space-y-2">
-        {navItems.map((item) => (
-          <NavLink
-            key={item.name}
-            to={item.path}
-            className={({ isActive }) =>
-              `block px-4 py-2 rounded-lg transition ${
-                isActive
-                  ? "bg-purple-100 text-purple-600 font-semibold"
-                  : "text-gray-600 hover:bg-gray-100"
-              }`
-            }
-          >
-            {item.name}
-          </NavLink>
-        ))}
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-4 py-2 rounded-lg transition ${
+                  isActive
+                    ? "bg-purple-100 text-purple-600 font-semibold"
+                    : "text-gray-600 hover:bg-gray-100"
+                } ${collapsed ? 'justify-center' : ''}`
+              }
+              title={collapsed ? item.name : ''}
+            >
+              <Icon className="w-5 h-5 flex-shrink-0" />
+              {!collapsed && <span>{item.name}</span>}
+            </NavLink>
+          );
+        })}
       </nav>
 
       {/* User Info */}
       <div className="absolute bottom-6 left-4 right-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700">
-            JD
+        {!collapsed ? (
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700">
+              JD
+            </div>
+            <div>
+              <p className="text-sm font-medium">John Doe</p>
+              <p className="text-xs text-gray-500">john@example.com</p>
+            </div>
           </div>
-          <div>
-            <p className="text-sm font-medium">John Doe</p>
-            <p className="text-xs text-gray-500">john@example.com</p>
+        ) : (
+          <div className="flex justify-center">
+            <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700">
+              JD
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </aside>
   );

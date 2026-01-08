@@ -127,19 +127,19 @@ export default function Dashboard() {
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-50 rounded-lg p-6 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+          <div className="bg-gray-50 rounded-lg p-6 text-center border border-gray-200 transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:-translate-y-0.5">
             <p className="text-4xl font-bold">{overview.TODO}</p>
             <p className="text-gray-500 mt-2">To Do</p>
           </div>
 
-          <div className="bg-purple-50 rounded-lg p-6 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+          <div className="bg-purple-50 rounded-lg p-6 text-center border border-purple-200 transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:-translate-y-0.5">
             <p className="text-4xl font-bold text-purple-600">
               {overview.IN_PROGRESS}
             </p>
             <p className="text-gray-500 mt-2">In Progress</p>
           </div>
 
-          <div className="bg-green-50 rounded-lg p-6 text-center transition-all duration-200 hover:shadow-lg hover:-translate-y-1">
+          <div className="bg-green-50 rounded-lg p-6 text-center border border-green-200 transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:-translate-y-0.5">
             <p className="text-4xl font-bold text-green-600">
               {overview.DONE}
             </p>

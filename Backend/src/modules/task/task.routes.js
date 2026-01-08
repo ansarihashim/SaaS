@@ -33,6 +33,15 @@ router.patch(
   taskController.updateTaskStatus
 );
 
+/*
+ * Update task → OWNER / ADMIN
+ */
+router.patch(
+  "/tasks/:taskId",
+  authMiddleware,
+  taskController.updateTask
+);
+
 router.patch(
   "/tasks/:taskId/assignee",
   authMiddleware,
