@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Topbar from "../components/Topbar";
 import StatCard from "../components/StatCard";
+import ActiveTasksCard from "../components/ActiveTasksCard";
+import RecentActivityCard from "../components/RecentActivityCard";
 import api from "../api/axios";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { useAuth } from "../contexts/AuthContext";
@@ -120,7 +122,7 @@ export default function Dashboard() {
       </div>
 
       {/* Task Overview */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
         <h3 className="text-lg font-semibold mb-1">Task Overview</h3>
         <p className="text-sm text-gray-500 mb-6">
           Current status distribution of all tasks
@@ -146,6 +148,12 @@ export default function Dashboard() {
             <p className="text-gray-500 mt-2">Done</p>
           </div>
         </div>
+      </div>
+
+      {/* Active Tasks & Recent Activity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <ActiveTasksCard workspaceId={activeWorkspace.id} />
+        <RecentActivityCard workspaceId={activeWorkspace.id} />
       </div>
     </DashboardLayout>
   );

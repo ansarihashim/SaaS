@@ -2,14 +2,15 @@ const prisma = require("../../config/db");
 
 /*
  * GET WORKSPACE ACTIVITY LOGS
- * OWNER / ADMIN
+ * All workspace members
  */
 exports.getWorkspaceActivity = async (req, res) => {
   try {
     const workspaceId = parseInt(req.params.workspaceId);
     const userId = req.userId;
+    const limit = parseInt(req.query.limit) || 10;
 
-    // Check membership
+    // Check membership (all members can view)
     const membership = await prisma.workspaceUser.findUnique({
       where: {
         userId_workspaceId: {
@@ -19,13 +20,14 @@ exports.getWorkspaceActivity = async (req, res) => {
       }
     });
 
-    if (!membership || !["OWNER", "ADMIN"].includes(membership.role)) {
+    if (!membership) {
       return res.status(403).json({ message: "Access denied" });
     }
 
     const logs = await prisma.activityLog.findMany({
       where: { workspaceId },
       orderBy: { createdAt: "desc" },
+      take: limit,
       include: {
         user: {
           select: { id: true, name: true }
