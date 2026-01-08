@@ -1,6 +1,49 @@
 const prisma = require("../../config/db");
 const { sendEmail } = require("../../utils/email");
 
+/**
+ * GET USER'S WORKSPACES
+ * Returns all workspaces the authenticated user belongs to
+ */
+exports.getMyWorkspaces = async (req, res) => {
+  try {
+    const userId = req.userId; // from JWT middleware
+
+    const workspaces = await prisma.workspaceUser.findMany({
+      where: {
+        userId: userId
+      },
+      include: {
+        workspace: {
+          select: {
+            id: true,
+            name: true,
+            createdAt: true
+          }
+        }
+      },
+      orderBy: {
+        workspace: {
+          createdAt: 'asc' // Order by related Workspace's createdAt
+        }
+      }
+    });
+
+    // Transform to clean response
+    const result = workspaces.map(wu => ({
+      id: wu.workspace.id,
+      name: wu.workspace.name,
+      role: wu.role,
+      joinedAt: wu.workspace.createdAt
+    }));
+
+    res.json({ workspaces: result });
+
+  } catch (error) {
+    console.error('Error fetching user workspaces:', error);
+    res.status(500).json({ message: "Server error" });
+  }
+};
 
 /**
  * CREATE WORKSPACE
@@ -143,6 +186,63 @@ catch (err){
       return res.status(400).json({ message: error.message });
     }
     res.status(500).json({ message: "Server error" });
+  }
+};
+
+exports.getWorkspaceDashboard = async (req, res, next) => {
+  try {
+    const workspaceId = parseInt(req.params.workspaceId);
+
+    const projectsCount = await prisma.project.count({
+      where: { workspaceId },
+    });
+
+    const tasksCount = await prisma.task.count({
+      where: {
+        project: { workspaceId },
+        deletedAt: null,
+      },
+    });
+
+    const statusCounts = await prisma.task.groupBy({
+      by: ["status"],
+      where: {
+        project: { workspaceId },
+        deletedAt: null,
+      },
+      _count: { status: true },
+    });
+
+    const overview = {
+      TODO: 0,
+      IN_PROGRESS: 0,
+      DONE: 0,
+    };
+
+    statusCounts.forEach((item) => {
+      overview[item.status] = item._count.status;
+    });
+
+    const membersCount = await prisma.workspaceUser.count({
+      where: { workspaceId },
+    });
+
+    const completionRate =
+      tasksCount === 0
+        ? 0
+        : Math.round((overview.DONE / tasksCount) * 100);
+
+    res.status(200).json({
+      stats: {
+        projects: projectsCount,
+        tasks: tasksCount,
+        members: membersCount,
+        completionRate,
+      },
+      overview,
+    });
+  } catch (error) {
+    next(error);
   }
 };
 
