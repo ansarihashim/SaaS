@@ -18,48 +18,67 @@ exports.register = async (req, res) => {
   try {
     const { name, email, password } = req.body;
 
-    // ✅ ADDED: Email format validation
-    if (!validator.isEmail(email)) {
+    // Validate required fields
+    if (!name || !email || !password) {
+      return res.status(400).json({ message: "Name, email, and password are required" });
+    }
+
+    // Normalize email
+    const normalizedEmail = email.trim().toLowerCase();
+
+    // Validate email format
+    if (!validator.isEmail(normalizedEmail)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
 
     // Check if user already exists
     const existingUser = await prisma.user.findUnique({
-      where: { email }
+      where: { email: normalizedEmail }
     });
 
     if (existingUser) {
       return res.status(400).json({ message: "User already exists" });
     }
 
-   // Password strength validation
-if (!isStrongPassword(password)) {
-  return res.status(400).json({
-    message:
-      "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
-  });
-}
- 
+    // Password strength validation
+    if (!isStrongPassword(password)) {
+      return res.status(400).json({
+        message:
+          "Password must be at least 8 characters long and include uppercase, lowercase, number, and special character"
+      });
+    }
 
-  // Hash password
+    // Hash password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // Create user
     const user = await prisma.user.create({
       data: {
         name,
-        email,
+        email: normalizedEmail,
         password: hashedPassword
       }
     });
 
+    // Generate JWT (same as login)
+    const token = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    // Return token and user data (same format as login)
     res.status(201).json({
-      message: "User registered successfully",
-      userId: user.id
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
     });
 
   } catch (error) {
-    console.error(error);
+    console.error('Registration error:', error);
     res.status(500).json({ message: "Server error" });
   }
 };

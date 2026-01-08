@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import PasswordInput from '../components/PasswordInput';
 
@@ -129,6 +129,19 @@ export default function Login() {
               )}
             </button>
           </form>
+
+          {/* Sign Up Link */}
+          <div className="mt-6 text-center">
+            <p className="text-gray-600">
+              Don't have an account?{' '}
+              <Link
+                to="/register"
+                className="text-purple-600 hover:text-purple-700 font-semibold transition-colors"
+              >
+                Sign up
+              </Link>
+            </p>
+          </div>
         </div>
 
         {/* Footer */}

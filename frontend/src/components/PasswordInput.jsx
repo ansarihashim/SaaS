@@ -3,6 +3,7 @@ import { FiEye, FiEyeOff } from 'react-icons/fi';
 
 export default function PasswordInput({
   id,
+  name,
   value,
   onChange,
   disabled = false,
@@ -25,6 +26,7 @@ export default function PasswordInput({
     <div className="relative">
       <input
         id={id}
+        name={name}
         type={showPassword ? 'text' : 'password'}
         value={value}
         onChange={onChange}
