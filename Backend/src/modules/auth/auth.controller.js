@@ -68,7 +68,12 @@ exports.login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // ✅ ADDED: Email format validation (optional but good)
+    // Validate required fields
+    if (!email || !password) {
+      return res.status(400).json({ message: "Email and password are required" });
+    }
+
+    // Validate email format
     if (!validator.isEmail(email)) {
       return res.status(400).json({ message: "Invalid email format" });
     }
@@ -91,15 +96,24 @@ exports.login = async (req, res) => {
 
     // Generate JWT
     const token = jwt.sign(
-      { userId: user.id },
+      { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
 
-    res.json({ token });
+    // Return token and user data
+    res.json({
+      token,
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email
+      }
+    });
 
   } catch (error) {
-    console.error(error);
+    console.error('Login error:', error);
+    console.error('Error details:', error.message);
     res.status(500).json({ message: "Server error" });
   }
 };

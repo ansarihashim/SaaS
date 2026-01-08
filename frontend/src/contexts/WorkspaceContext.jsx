@@ -69,8 +69,16 @@ export const WorkspaceProvider = ({ children }) => {
   const createWorkspace = async (name) => {
     try {
       const response = await axios.post('/workspaces', { name });
-      await fetchWorkspaces(); // Refresh list
-      return response.data.workspace;
+      const newWorkspace = response.data.workspace;
+      
+      // Add to workspaces list
+      setWorkspaces(prev => [...prev, newWorkspace]);
+      
+      // Set as active workspace
+      setActiveWorkspace(newWorkspace);
+      localStorage.setItem('activeWorkspaceId', newWorkspace.id);
+      
+      return newWorkspace;
     } catch (err) {
       throw new Error(err.response?.data?.message || 'Failed to create workspace');
     }

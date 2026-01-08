@@ -1,5 +1,7 @@
 import { useState, createContext, useContext } from "react";
 import Sidebar from "../components/Sidebar";
+import EmptyWorkspaceState from "../components/EmptyWorkspaceState";
+import { useWorkspace } from "../contexts/WorkspaceContext";
 
 const SidebarContext = createContext();
 
@@ -13,10 +15,28 @@ export const useSidebar = () => {
 
 export default function DashboardLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const { workspaces, loading } = useWorkspace();
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gray-50">
+        <div className="text-center">
+          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
+          <p className="mt-4 text-gray-600">Loading workspaces...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show empty state if no workspaces
+  if (workspaces.length === 0) {
+    return <EmptyWorkspaceState />;
+  }
 
   return (
     <SidebarContext.Provider value={{ toggleSidebar, collapsed: sidebarCollapsed }}>

@@ -1,7 +1,8 @@
 import { NavLink } from "react-router-dom";
 import { useWorkspace } from "../contexts/WorkspaceContext";
+import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
-import { FiHome, FiFolder, FiCheckSquare, FiActivity, FiUsers } from "react-icons/fi";
+import { FiHome, FiFolder, FiCheckSquare, FiActivity, FiUsers, FiLogOut } from "react-icons/fi";
 
 const navItems = [
   { name: "Dashboard", path: "/", icon: FiHome },
@@ -13,6 +14,7 @@ const navItems = [
 
 export default function Sidebar({ collapsed }) {
   const { workspaces, activeWorkspace, selectWorkspace } = useWorkspace();
+  const { user, logout } = useAuth();
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
 
   return (
@@ -98,6 +100,21 @@ export default function Sidebar({ collapsed }) {
       <nav className="space-y-2">
         {navItems.map((item) => {
           const Icon = item.icon;
+          const isDisabled = !activeWorkspace && item.path !== '/';
+          
+          if (isDisabled) {
+            return (
+              <div
+                key={item.name}
+                className={`flex items-center gap-3 px-4 py-2 rounded-lg text-gray-400 cursor-not-allowed ${collapsed ? 'justify-center' : ''}`}
+                title={collapsed ? `${item.name} (No workspace)` : 'Select a workspace first'}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                {!collapsed && <span>{item.name}</span>}
+              </div>
+            );
+          }
+          
           return (
             <NavLink
               key={item.name}
@@ -111,30 +128,48 @@ export default function Sidebar({ collapsed }) {
               }
               title={collapsed ? item.name : ''}
             >
-              <Icon className="w-5 h-5 flex-shrink-0" />
+              <Icon className="w-5 h-5 shrink-0" />
               {!collapsed && <span>{item.name}</span>}
             </NavLink>
           );
         })}
       </nav>
 
-      {/* User Info */}
+      {/* User Info & Logout */}
       <div className="absolute bottom-6 left-4 right-4">
         {!collapsed ? (
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700">
-              JD
+          <div className="space-y-2">
+            <div className="flex items-center gap-3 px-2 py-2">
+              <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700 text-sm">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
+              </div>
             </div>
-            <div>
-              <p className="text-sm font-medium">John Doe</p>
-              <p className="text-xs text-gray-500">john@example.com</p>
-            </div>
+            <button
+              onClick={logout}
+              className="w-full flex items-center gap-3 px-4 py-2 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition"
+            >
+              <FiLogOut className="w-5 h-5" />
+              <span>Logout</span>
+            </button>
           </div>
         ) : (
-          <div className="flex justify-center">
-            <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700">
-              JD
+          <div className="space-y-2">
+            <div className="flex justify-center">
+              <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700 text-sm">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
             </div>
+            <button
+              onClick={logout}
+              className="w-full flex justify-center px-2 py-2 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition"
+              title="Logout"
+            >
+              <FiLogOut className="w-5 h-5" />
+            </button>
           </div>
         )}
       </div>
