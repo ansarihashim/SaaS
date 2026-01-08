@@ -104,11 +104,11 @@ export default function ActiveTasksCard({ workspaceId }) {
 
   if (loading) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-lg font-semibold">Active Tasks</h3>
-            <p className="text-sm text-gray-500">Tasks that need attention</p>
+            <h3 className="text-xl font-bold text-gray-900">Active Tasks</h3>
+            <p className="text-sm text-gray-500 mt-1">Tasks that need attention</p>
           </div>
         </div>
         <div className="space-y-3">
@@ -125,11 +125,11 @@ export default function ActiveTasksCard({ workspaceId }) {
 
   if (error) {
     return (
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
         <div className="flex justify-between items-center mb-6">
           <div>
-            <h3 className="text-lg font-semibold">Active Tasks</h3>
-            <p className="text-sm text-gray-500">Tasks that need attention</p>
+            <h3 className="text-xl font-bold text-gray-900">Active Tasks</h3>
+            <p className="text-sm text-gray-500 mt-1">Tasks that need attention</p>
           </div>
         </div>
         <div className="bg-red-50 border border-red-200 rounded-lg p-4">
@@ -140,15 +140,15 @@ export default function ActiveTasksCard({ workspaceId }) {
   }
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6">
+    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm">
       <div className="flex justify-between items-center mb-6">
         <div>
-          <h3 className="text-lg font-semibold">Active Tasks</h3>
-          <p className="text-sm text-gray-500">Tasks that need attention</p>
+          <h3 className="text-xl font-bold text-gray-900">Active Tasks</h3>
+          <p className="text-sm text-gray-500 mt-1">Tasks that need attention</p>
         </div>
         <button
           onClick={() => navigate("/tasks")}
-          className="text-purple-600 hover:text-purple-700 text-sm font-medium transition-colors"
+          className="text-purple-600 hover:text-purple-700 text-sm font-semibold transition-colors"
         >
           View all
         </button>

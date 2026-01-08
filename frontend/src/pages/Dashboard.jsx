@@ -4,13 +4,16 @@ import Topbar from "../components/Topbar";
 import StatCard from "../components/StatCard";
 import ActiveTasksCard from "../components/ActiveTasksCard";
 import RecentActivityCard from "../components/RecentActivityCard";
+import { MdFolder, MdChecklist, MdGroup, MdTrendingUp, MdArrowForward } from "react-icons/md";
 import api from "../api/axios";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useNavigate } from "react-router-dom";
 
 export default function Dashboard() {
   const { activeWorkspace, loading: workspaceLoading, error: workspaceError } = useWorkspace();
   const { user, loading: userLoading } = useAuth();
+  const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
@@ -102,50 +105,56 @@ export default function Dashboard() {
   return (
     <DashboardLayout>
       <Topbar
-        title={user ? `Welcome back, ${user.name}` : "Welcome back"}
+        title="Dashboard"
+        subtitle={`Welcome back! Here's what's happening in ${activeWorkspace.name}.`}
         action={
-          <button className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200">
+          <button 
+            onClick={() => navigate('/tasks')}
+            className="bg-purple-600 text-white px-5 py-2.5 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200 flex items-center gap-2 font-medium"
+          >
             View All Tasks
+            <MdArrowForward className="w-5 h-5" />
           </button>
         }
       />
 
       {/* Stats */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-10">
-        <StatCard label="Total Projects" value={stats.projects} />
-        <StatCard label="Total Tasks" value={stats.tasks} />
-        <StatCard label="Team Members" value={stats.members} />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <StatCard label="Total Projects" value={stats.projects} icon={MdFolder} />
+        <StatCard label="Total Tasks" value={stats.tasks} icon={MdChecklist} />
+        <StatCard label="Team Members" value={stats.members} icon={MdGroup} />
         <StatCard
           label="Completion Rate"
           value={`${stats.completionRate}%`}
+          icon={MdTrendingUp}
         />
       </div>
 
       {/* Task Overview */}
-      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-        <h3 className="text-lg font-semibold mb-1">Task Overview</h3>
+      <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8 shadow-sm">
+        <h3 className="text-xl font-bold text-gray-900 mb-1">Task Overview</h3>
         <p className="text-sm text-gray-500 mb-6">
           Current status distribution of all tasks
         </p>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-gray-50 rounded-lg p-6 text-center border border-gray-200 transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:-translate-y-0.5">
-            <p className="text-4xl font-bold">{overview.TODO}</p>
-            <p className="text-gray-500 mt-2">To Do</p>
+          <div className="bg-gray-50 rounded-lg p-6 text-center border border-gray-200 transition-all duration-200 hover:border-purple-400 hover:shadow-md hover:-translate-y-0.5">
+            <p className="text-5xl font-bold text-gray-900">{overview.TODO}</p>
+            <p className="text-gray-600 mt-2 font-medium">To Do</p>
           </div>
 
-          <div className="bg-purple-50 rounded-lg p-6 text-center border border-purple-200 transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:-translate-y-0.5">
-            <p className="text-4xl font-bold text-purple-600">
+          <div className="bg-purple-50 rounded-lg p-6 text-center border border-purple-200 transition-all duration-200 hover:border-purple-400 hover:shadow-md hover:-translate-y-0.5">
+            <p className="text-5xl font-bold text-purple-600">
               {overview.IN_PROGRESS}
             </p>
-            <p className="text-gray-500 mt-2">In Progress</p>
+            <p className="text-gray-600 mt-2 font-medium">In Progress</p>
           </div>
 
-          <div className="bg-green-50 rounded-lg p-6 text-center border border-green-200 transition-all duration-200 hover:border-purple-500 hover:shadow-lg hover:-translate-y-0.5">
-            <p className="text-4xl font-bold text-green-600">
+          <div className="bg-green-50 rounded-lg p-6 text-center border border-green-200 transition-all duration-200 hover:border-green-400 hover:shadow-md hover:-translate-y-0.5">
+            <p className="text-5xl font-bold text-green-600">
               {overview.DONE}
             </p>
-            <p className="text-gray-500 mt-2">Done</p>
+            <p className="text-gray-600 mt-2 font-medium">Done</p>
           </div>
         </div>
       </div>
