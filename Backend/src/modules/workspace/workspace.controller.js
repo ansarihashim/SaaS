@@ -145,6 +145,18 @@ exports.inviteUser = async (req, res) => {
           role
         }
       });
+
+      // Log activity
+      await tx.activityLog.create({
+        data: {
+          action: "MEMBER_INVITED",
+          entityType: "USER",
+          entityId: user.id,
+          message: `${user.name || user.email} invited to workspace`,
+          userId: req.userId,
+          workspaceId
+        }
+      });
     });
 
     // Fetch workspace and inviter info for email

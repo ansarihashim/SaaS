@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { MdAdd, MdSync, MdCheckCircle, MdDelete, MdPerson } from "react-icons/md";
+import { Link } from "react-router-dom";
 import api from "../api/axios";
 
 export default function RecentActivityCard({ workspaceId }) {
@@ -61,11 +62,25 @@ export default function RecentActivityCard({ workspaceId }) {
   };
 
   const parseActivityMessage = (log) => {
-    // Message format: "Task 'Title' created" or similar
-    const actor = log.user?.name || "Someone";
+    // Extract user info with fallback
+    const userName = log.user?.name || "System";
+    const userEmail = log.user?.email || "";
+    
+    // Generate initials from name
+    const getInitials = (name) => {
+      if (!name || name === "System") return "SY";
+      return name
+        .split(" ")
+        .map(n => n[0])
+        .join("")
+        .slice(0, 2)
+        .toUpperCase();
+    };
+
+    const initials = getInitials(userName);
     const message = log.message;
     
-    return { actor, message };
+    return { userName, userEmail, initials, message };
   };
 
   if (loading) {
@@ -118,9 +133,12 @@ export default function RecentActivityCard({ workspaceId }) {
             Latest actions in your workspace
           </p>
         </div>
-        <button className="text-purple-600 hover:text-purple-700 text-sm font-semibold transition-colors">
+        <Link 
+          to="/activity" 
+          className="text-purple-600 hover:text-purple-700 text-sm font-semibold transition-colors"
+        >
           View all
-        </button>
+        </Link>
       </div>
 
       {activities.length === 0 ? (
@@ -130,22 +148,23 @@ export default function RecentActivityCard({ workspaceId }) {
       ) : (
         <div className="space-y-4">
           {activities.map((log) => {
-            const { actor, message } = parseActivityMessage(log);
+            const { userName, userEmail, initials, message } = parseActivityMessage(log);
             return (
               <div
                 key={log.id}
                 className="flex items-start gap-3 p-4 rounded-lg hover:bg-gray-50 transition-all"
               >
-                {/* Icon */}
-                <div className="shrink-0 w-10 h-10 rounded-full bg-purple-100 flex items-center justify-center">
-                  {getActivityIcon(log.action)}
+                {/* User Avatar */}
+                <div className="shrink-0 w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm font-bold">
+                  {initials}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-semibold text-gray-900 leading-relaxed">
-                    <span>{actor}</span>
-                    <span className="text-gray-600 font-normal"> · {message}</span>
+                  <p className="text-base font-medium text-gray-900 leading-relaxed">
+                    <span className="font-semibold">{userName}</span>
+                    <span className="text-gray-400 mx-1.5">·</span>
+                    <span className="text-gray-700">{message}</span>
                   </p>
                   <p className="text-xs text-gray-500 mt-1.5">
                     {formatTimeAgo(log.createdAt)}

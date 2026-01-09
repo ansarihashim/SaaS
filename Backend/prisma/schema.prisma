@@ -92,13 +92,16 @@ enum Priority {
 model ActivityLog {
   id          Int      @id @default(autoincrement())
   action      String
-  entityType  String // "TASK", "PROJECT"
+  entityType  String   // "TASK", "PROJECT"
   entityId    Int
   message     String
+
   userId      Int
   workspaceId Int
+
   createdAt   DateTime @default(now())
 
-  user      User      @relation(fields: [userId], references: [id])
-  workspace Workspace @relation(fields: [workspaceId], references: [id])
+  user        User      @relation(fields: [userId], references: [id])
+  workspace   Workspace @relation(fields: [workspaceId], references: [id])
 }
+

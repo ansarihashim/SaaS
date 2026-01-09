@@ -217,6 +217,23 @@ function ActivityItem({ activity }) {
 
   const icon = getActivityIcon(activity.action);
   const iconColor = getActivityIconColor(activity.action);
+  
+  // Extract user info with fallback
+  const userName = activity.user?.name || "System";
+  const userEmail = activity.user?.email || "";
+  
+  // Generate initials from name
+  const getInitials = (name) => {
+    if (!name || name === "System") return "SY";
+    return name
+      .split(" ")
+      .map(n => n[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+  };
+
+  const initials = getInitials(userName);
 
   return (
     <div className="relative pl-8 pb-6">
@@ -230,16 +247,27 @@ function ActivityItem({ activity }) {
         {/* Activity Header */}
         <div className="flex items-start justify-between mb-2">
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-gray-900">
-                {activity.user?.name || "Unknown User"}
-              </span>
-              <span className="text-gray-400">•</span>
-              <span className="text-sm text-gray-500">
-                {formatActionText(activity.action)}
-              </span>
+            <div className="flex items-center gap-3 mb-2">
+              {/* User Avatar */}
+              <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
+                {initials}
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="flex items-center gap-2">
+                  <span className="font-semibold text-gray-900">
+                    {userName}
+                  </span>
+                  {userEmail && (
+                    <span className="text-xs text-gray-500">({userEmail})</span>
+                  )}
+                  <span className="text-gray-400">•</span>
+                  <span className="text-sm text-gray-600">
+                    {formatActionText(activity.action)}
+                  </span>
+                </div>
+              </div>
             </div>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-gray-700 ml-11">
               {activity.message || activity.description || "No description"}
             </p>
           </div>
@@ -250,7 +278,7 @@ function ActivityItem({ activity }) {
 
         {/* Entity Info */}
         {(activity.entityType || activity.entityId) && (
-          <div className="mt-3 pt-3 border-t border-gray-100">
+          <div className="mt-3 pt-3 border-t border-gray-100 ml-11">
             <div className="flex items-center gap-2 text-xs text-gray-500">
               {activity.entityType === "TASK" && <FiCheckCircle className="w-4 h-4" />}
               {activity.entityType === "PROJECT" && <FiFolder className="w-4 h-4" />}

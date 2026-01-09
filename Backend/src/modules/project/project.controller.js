@@ -25,6 +25,18 @@ exports.createProject = async (req, res) => {
       }
     });
 
+    // Log activity
+    await prisma.activityLog.create({
+      data: {
+        action: "PROJECT_CREATED",
+        entityType: "PROJECT",
+        entityId: project.id,
+        message: `Project "${project.name}" created`,
+        userId: req.userId,
+        workspaceId
+      }
+    });
+
     res.status(201).json({
       message: "Project created successfully",
       project
@@ -108,6 +120,18 @@ exports.updateProject = async (req, res) => {
       }
     });
 
+    // Log activity
+    await prisma.activityLog.create({
+      data: {
+        action: "PROJECT_UPDATED",
+        entityType: "PROJECT",
+        entityId: projectId,
+        message: `Project "${updatedProject.name}" updated`,
+        userId: req.userId,
+        workspaceId: project.workspaceId
+      }
+    });
+
     res.json({
       message: "Project updated successfully",
       project: updatedProject
@@ -165,7 +189,7 @@ exports.deleteProject = async (req, res) => {
         entityType: "PROJECT",
         entityId: projectId,
         message: `Project "${project.name}" deleted`,
-        userId,
+        userId: req.userId,
         workspaceId: project.workspaceId
       }
     });

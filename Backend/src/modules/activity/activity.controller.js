@@ -30,7 +30,7 @@ exports.getWorkspaceActivity = async (req, res) => {
       take: limit,
       include: {
         user: {
-          select: { id: true, name: true }
+          select: { id: true, name: true, email: true }
         }
       }
     });

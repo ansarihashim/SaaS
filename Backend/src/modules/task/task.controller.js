@@ -50,16 +50,16 @@ exports.createTask = async (req, res) => {
       }
     });
   
-await prisma.activityLog.create({
-  data: {
-    action: "TASK_CREATED",
-    entityType: "TASK",
-    entityId: task.id,
-    message: `Task "${task.title}" created`,
-    userId,
-    workspaceId: project.workspaceId
-  }
-});
+    await prisma.activityLog.create({
+      data: {
+        action: "TASK_CREATED",
+        entityType: "TASK",
+        entityId: task.id,
+        message: `Task "${task.title}" created`,
+        userId: req.userId,
+        workspaceId: project.workspaceId
+      }
+    });
 
 
     res.status(201).json({
@@ -220,16 +220,16 @@ exports.updateTaskStatus = async (req, res) => {
       data: { status }
     });
    
-await prisma.activityLog.create({
-  data: {
-    action: "TASK_STATUS_UPDATED",
-    entityType: "TASK",
-    entityId: updatedTask.id,
-    message: `Task status changed to ${status}`,
-    userId,
-    workspaceId: task.project.workspaceId
-  }
-});
+    await prisma.activityLog.create({
+      data: {
+        action: "TASK_STATUS_UPDATED",
+        entityType: "TASK",
+        entityId: updatedTask.id,
+        message: `Task status changed to ${status}`,
+        userId: req.userId,
+        workspaceId: task.project.workspaceId
+      }
+    });
 
 
     res.json({
@@ -297,7 +297,7 @@ exports.updateTask = async (req, res) => {
         entityType: "TASK",
         entityId: updatedTask.id,
         message: `Task "${updatedTask.title}" updated`,
-        userId,
+        userId: req.userId,
         workspaceId: task.project.workspaceId
       }
     });
@@ -380,16 +380,16 @@ exports.reassignTask = async (req, res) => {
       data: { assigneeId }
     });
 
-await prisma.activityLog.create({
-  data: {
-    action: "TASK_REASSIGNED",
-    entityType: "TASK",
-    entityId: updatedTask.id,
-    message: `Task reassigned to user ${assigneeId}`,
-    userId,
-    workspaceId: task.project.workspaceId
-  }
-});
+    await prisma.activityLog.create({
+      data: {
+        action: "TASK_REASSIGNED",
+        entityType: "TASK",
+        entityId: updatedTask.id,
+        message: `Task reassigned to user ${assigneeId}`,
+        userId: req.userId,
+        workspaceId: task.project.workspaceId
+      }
+    });
 
 
     res.json({
@@ -452,7 +452,7 @@ exports.deleteTask = async (req, res) => {
         entityType: "TASK",
         entityId: taskId,
         message: `Task "${task.title}" deleted`,
-        userId,
+        userId: req.userId,
         workspaceId: task.project.workspaceId
       }
     });
@@ -514,7 +514,7 @@ exports.restoreTask = async (req, res) => {
         entityType: "TASK",
         entityId: taskId,
         message: `Task "${task.title}" restored`,
-        userId,
+        userId: req.userId,
         workspaceId: task.project.workspaceId
       }
     });
