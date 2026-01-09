@@ -52,6 +52,7 @@ exports.createProject = async (req, res) => {
 /**
  * LIST PROJECTS (workspace scoped)
  * Any member of workspace
+ * Includes task statistics for each project
  */
 exports.getProjects = async (req, res) => {
   try {
@@ -63,12 +64,44 @@ exports.getProjects = async (req, res) => {
 
     const projects = await prisma.project.findMany({
       where: { 
-        workspaceId
+        workspaceId,
+        deletedAt: null
+      },
+      include: {
+        tasks: {
+          where: {
+            deletedAt: null
+          },
+          select: {
+            status: true
+          }
+        }
       },
       orderBy: { createdAt: "desc" }
     });
 
-    res.json({ projects });
+    // Calculate stats for each project
+    const projectsWithStats = projects.map(project => {
+      const totalTasks = project.tasks.length;
+      const completedTasks = project.tasks.filter(t => t.status === "DONE").length;
+      const inProgressTasks = project.tasks.filter(t => t.status === "IN_PROGRESS").length;
+      const progressPercent = totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+      // Remove tasks array from response, return only stats
+      const { tasks, ...projectData } = project;
+
+      return {
+        ...projectData,
+        stats: {
+          totalTasks,
+          completedTasks,
+          inProgressTasks,
+          progressPercent
+        }
+      };
+    });
+
+    res.json({ projects: projectsWithStats });
 
   } catch (error) {
     console.error('Error fetching projects:', error);
