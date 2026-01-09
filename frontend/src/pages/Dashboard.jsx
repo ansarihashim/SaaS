@@ -106,7 +106,7 @@ export default function Dashboard() {
     <DashboardLayout>
       <Topbar
         title="Dashboard"
-        subtitle={`Welcome back! Here's what's happening in ${activeWorkspace.name}.`}
+        subtitle={`Welcome back, ${user?.name || user?.email || 'there'}.`}
         action={
           <button 
             onClick={() => navigate('/tasks')}

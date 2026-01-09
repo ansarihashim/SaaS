@@ -4,13 +4,6 @@ import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { activityAPI } from "../services/api";
 import {
-  FiPlus,
-  FiEdit,
-  FiTrash2,
-  FiCheckCircle,
-  FiClock,
-  FiUser,
-  FiFolder,
   FiActivity,
 } from "react-icons/fi";
 
@@ -121,11 +114,6 @@ export default function Activity() {
     );
   }
 
-  // Group activities by date - safely handle empty array
-  const groupedActivities = Array.isArray(activities) && activities.length > 0 
-    ? groupByDate(activities) 
-    : [];
-
   return (
     <DashboardLayout>
       <Topbar
@@ -184,26 +172,19 @@ export default function Activity() {
           </div>
         )}
 
-        {/* Activity Timeline */}
+        {/* Activity List */}
         {!loading && !error && activities && activities.length > 0 && (
-          <div className="max-w-4xl mx-auto">
-            {groupedActivities.map(({ date, items }) => (
-              <div key={date} className="mb-8">
-                {/* Date Header */}
-                <div className="sticky top-0 bg-white z-10 py-2 mb-4">
-                  <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide">
-                    {formatDateHeader(date)}
-                  </h3>
-                </div>
-
-                {/* Activity Items */}
-                <div className="relative border-l-2 border-gray-200 ml-4 space-y-6">
-                  {Array.isArray(items) && items.map(activity => (
-                    <ActivityItem key={activity.id} activity={activity} />
-                  ))}
-                </div>
+          <div className="bg-white rounded-xl border border-gray-200 shadow-sm">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-900 mb-4">
+                Latest actions in your workspace
+              </h3>
+              <div className="divide-y divide-gray-100">
+                {activities.map(activity => (
+                  <ActivityItem key={activity.id} activity={activity} />
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         )}
       </div>
@@ -215,149 +196,36 @@ function ActivityItem({ activity }) {
   // Defensive null checks
   if (!activity) return null;
 
-  const icon = getActivityIcon(activity.action);
-  const iconColor = getActivityIconColor(activity.action);
-  
-  // Extract user info with fallback
   const userName = activity.user?.name || "System";
-  const userEmail = activity.user?.email || "";
-  
-  // Generate initials from name
-  const getInitials = (name) => {
-    if (!name || name === "System") return "SY";
-    return name
-      .split(" ")
-      .map(n => n[0])
-      .join("")
-      .slice(0, 2)
-      .toUpperCase();
-  };
-
-  const initials = getInitials(userName);
+  const message = activity.message || activity.description || "No description";
 
   return (
-    <div className="relative pl-8 pb-6">
-      {/* Timeline Icon */}
-      <div className={`absolute -left-4 w-8 h-8 rounded-full ${iconColor} flex items-center justify-center border-4 border-white shadow`}>
-        {icon}
-      </div>
-
-      {/* Activity Card */}
-      <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all duration-200">
-        {/* Activity Header */}
-        <div className="flex items-start justify-between mb-2">
-          <div className="flex-1">
-            <div className="flex items-center gap-3 mb-2">
-              {/* User Avatar */}
-              <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center text-white text-xs font-bold shrink-0">
-                {initials}
-              </div>
-              <div className="flex-1 min-w-0">
-                <div className="flex items-center gap-2">
-                  <span className="font-semibold text-gray-900">
-                    {userName}
-                  </span>
-                  {userEmail && (
-                    <span className="text-xs text-gray-500">({userEmail})</span>
-                  )}
-                  <span className="text-gray-400">•</span>
-                  <span className="text-sm text-gray-600">
-                    {formatActionText(activity.action)}
-                  </span>
-                </div>
-              </div>
-            </div>
-            <p className="text-sm text-gray-700 ml-11">
-              {activity.message || activity.description || "No description"}
-            </p>
-          </div>
-          <span className="text-xs text-gray-400 whitespace-nowrap ml-4">
-            {formatTime(activity.createdAt)}
-          </span>
+    <div className="py-4 border-b border-gray-100 last:border-0">
+      <div className="flex items-start gap-3">
+        {/* Activity Icon */}
+        <div className="shrink-0 w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
+          <FiActivity className="w-5 h-5 text-purple-400" />
         </div>
 
-        {/* Entity Info */}
-        {(activity.entityType || activity.entityId) && (
-          <div className="mt-3 pt-3 border-t border-gray-100 ml-11">
-            <div className="flex items-center gap-2 text-xs text-gray-500">
-              {activity.entityType === "TASK" && <FiCheckCircle className="w-4 h-4" />}
-              {activity.entityType === "PROJECT" && <FiFolder className="w-4 h-4" />}
-              {activity.entityType === "USER" && <FiUser className="w-4 h-4" />}
-              <span className="capitalize">{activity.entityType?.toLowerCase() || "Unknown"}</span>
-              {activity.entityId && (
-                <>
-                  <span>•</span>
-                  <span className="font-mono">ID: {activity.entityId}</span>
-                </>
-              )}
-            </div>
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-start justify-between gap-4">
+            <p className="leading-relaxed flex-1">
+              <span className="text-lg font-semibold text-gray-900">{userName}</span>
+              <span className="text-gray-400 mx-2">·</span>
+              <span className="text-base text-gray-700">{message}</span>
+            </p>
+            <span className="text-sm text-gray-500 whitespace-nowrap">
+              {formatTime(activity.createdAt)}
+            </span>
           </div>
-        )}
+        </div>
       </div>
     </div>
   );
 }
 
 // Helper Functions
-function getActivityIcon(action) {
-  // Extract the action type (e.g., "TASK_DELETED" -> "DELETED")
-  const actionType = action?.includes('_') ? action.split('_').pop() : action;
-  
-  switch (actionType) {
-    case "CREATED":
-      return <FiPlus className="w-4 h-4 text-white" />;
-    case "UPDATED":
-    case "REASSIGNED":
-    case "STATUS":
-      return <FiEdit className="w-4 h-4 text-white" />;
-    case "DELETED":
-      return <FiTrash2 className="w-4 h-4 text-white" />;
-    case "COMPLETED":
-    case "RESTORED":
-      return <FiCheckCircle className="w-4 h-4 text-white" />;
-    default:
-      return <FiActivity className="w-4 h-4 text-white" />;
-  }
-}
-
-function getActivityIconColor(action) {
-  // Extract the action type (e.g., "TASK_DELETED" -> "DELETED")
-  const actionType = action?.includes('_') ? action.split('_').pop() : action;
-  
-  switch (actionType) {
-    case "CREATED":
-      return "bg-green-500";
-    case "UPDATED":
-    case "REASSIGNED":
-    case "STATUS":
-      return "bg-blue-500";
-    case "DELETED":
-      return "bg-red-500";
-    case "COMPLETED":
-      return "bg-purple-500";
-    case "RESTORED":
-      return "bg-emerald-500";
-    default:
-      return "bg-gray-500";
-  }
-}
-
-function formatActionText(action) {
-  // Extract the action type (e.g., "TASK_DELETED" -> "DELETED")
-  const actionType = action?.includes('_') ? action.split('_').pop() : action;
-  
-  const actionMap = {
-    CREATED: "created",
-    UPDATED: "updated",
-    DELETED: "deleted",
-    COMPLETED: "completed",
-    RESTORED: "restored",
-    REASSIGNED: "reassigned",
-    STATUS: "updated status",
-  };
-  return actionMap[actionType] || actionType?.toLowerCase() || "performed action";
-}
-
 function formatTime(timestamp) {
   const date = new Date(timestamp);
   const now = new Date();
@@ -366,67 +234,15 @@ function formatTime(timestamp) {
   const diffHours = Math.floor(diffMs / 3600000);
   const diffDays = Math.floor(diffMs / 86400000);
 
-  if (diffMins < 1) return "Just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  if (diffHours < 24) return `${diffHours}h ago`;
-  if (diffDays < 7) return `${diffDays}d ago`;
+  if (diffMins < 1) return "just now";
+  if (diffMins < 60) return `${diffMins} minutes ago`;
+  if (diffMins === 1) return "1 minute ago";
+  if (diffHours < 24) return `${diffHours} ${diffHours === 1 ? 'hour' : 'hours'} ago`;
+  if (diffDays === 1) return "1 day ago";
+  if (diffDays < 7) return `${diffDays} days ago`;
 
   return date.toLocaleDateString("en-US", {
     month: "short",
     day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
   });
-}
-
-function formatDateHeader(dateString) {
-  const date = new Date(dateString);
-  const today = new Date();
-  const yesterday = new Date(today);
-  yesterday.setDate(yesterday.getDate() - 1);
-
-  const dateOnly = date.toDateString();
-  const todayOnly = today.toDateString();
-  const yesterdayOnly = yesterday.toDateString();
-
-  if (dateOnly === todayOnly) return "Today";
-  if (dateOnly === yesterdayOnly) return "Yesterday";
-
-  return date.toLocaleDateString("en-US", {
-    weekday: "long",
-    month: "long",
-    day: "numeric",
-    year: date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
-  });
-}
-
-function groupByDate(activities) {
-  // Defensive check
-  if (!Array.isArray(activities) || activities.length === 0) {
-    return [];
-  }
-
-  const groups = {};
-
-  activities.forEach(activity => {
-    if (!activity || !activity.createdAt) return;
-    
-    const date = new Date(activity.createdAt).toDateString();
-    if (!groups[date]) {
-      groups[date] = [];
-    }
-    groups[date].push(activity);
-  });
-
-  // Convert to array and sort by date (newest first)
-  return Object.entries(groups)
-    .map(([date, items]) => ({
-      date,
-      items: items.sort((a, b) => {
-        const dateA = a.createdAt ? new Date(a.createdAt) : new Date(0);
-        const dateB = b.createdAt ? new Date(b.createdAt) : new Date(0);
-        return dateB - dateA;
-      }),
-    }))
-    .sort((a, b) => new Date(b.date) - new Date(a.date));
 }

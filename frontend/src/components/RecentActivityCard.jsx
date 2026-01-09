@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MdAdd, MdSync, MdCheckCircle, MdDelete, MdPerson } from "react-icons/md";
+import { FiActivity } from "react-icons/fi";
 import { Link } from "react-router-dom";
 import api from "../api/axios";
 
@@ -30,21 +30,9 @@ export default function RecentActivityCard({ workspaceId }) {
     fetchActivity();
   }, [workspaceId]);
 
-  const getActivityIcon = (action) => {
-    if (action.includes("CREATED")) {
-      return <MdAdd className="w-5 h-5 text-green-600" />;
-    }
-    if (action.includes("UPDATED") || action.includes("STATUS")) {
-      return <MdSync className="w-5 h-5 text-blue-600" />;
-    }
-    if (action.includes("DELETED")) {
-      return <MdDelete className="w-5 h-5 text-red-600" />;
-    }
-    if (action.includes("ASSIGNED") || action.includes("REASSIGNED")) {
-      return <MdPerson className="w-5 h-5 text-purple-600" />;
-    }
-    // Default icon
-    return <MdCheckCircle className="w-5 h-5 text-gray-600" />;
+  const getActivityIcon = () => {
+    // Simple activity icon for all actions (matches reference design)
+    return <FiActivity className="w-5 h-5 text-purple-400" />;
   };
 
   const formatTimeAgo = (dateString) => {
@@ -61,27 +49,7 @@ export default function RecentActivityCard({ workspaceId }) {
     return date.toLocaleDateString();
   };
 
-  const parseActivityMessage = (log) => {
-    // Extract user info with fallback
-    const userName = log.user?.name || "System";
-    const userEmail = log.user?.email || "";
-    
-    // Generate initials from name
-    const getInitials = (name) => {
-      if (!name || name === "System") return "SY";
-      return name
-        .split(" ")
-        .map(n => n[0])
-        .join("")
-        .slice(0, 2)
-        .toUpperCase();
-    };
 
-    const initials = getInitials(userName);
-    const message = log.message;
-    
-    return { userName, userEmail, initials, message };
-  };
 
   if (loading) {
     return (
@@ -146,27 +114,29 @@ export default function RecentActivityCard({ workspaceId }) {
           <p className="text-gray-500">No recent activity</p>
         </div>
       ) : (
-        <div className="space-y-4">
+        <div className="space-y-3">
           {activities.map((log) => {
-            const { userName, userEmail, initials, message } = parseActivityMessage(log);
+            const userName = log.user?.name || "System";
+            const message = log.message;
+            
             return (
               <div
                 key={log.id}
-                className="flex items-start gap-3 p-4 rounded-lg hover:bg-gray-50 transition-all"
+                className="flex items-start gap-3 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors"
               >
-                {/* User Avatar */}
-                <div className="shrink-0 w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white text-sm font-bold">
-                  {initials}
+                {/* Activity Icon */}
+                <div className="shrink-0 w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
+                  {getActivityIcon()}
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-base font-medium text-gray-900 leading-relaxed">
-                    <span className="font-semibold">{userName}</span>
-                    <span className="text-gray-400 mx-1.5">·</span>
-                    <span className="text-gray-700">{message}</span>
+                  <p className="leading-relaxed">
+                    <span className="text-lg font-semibold text-gray-900">{userName}</span>
+                    <span className="text-gray-400 mx-2">·</span>
+                    <span className="text-base text-gray-700">{message}</span>
                   </p>
-                  <p className="text-xs text-gray-500 mt-1.5">
+                  <p className="text-sm text-gray-500 mt-1">
                     {formatTimeAgo(log.createdAt)}
                   </p>
                 </div>
