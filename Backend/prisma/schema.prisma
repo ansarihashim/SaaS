@@ -14,9 +14,10 @@ model User {
   password  String
   createdAt DateTime @default(now())
 
-  workspaces   WorkspaceUser[]
-  tasks        Task[]          @relation("TaskAssignee")
-  activityLogs ActivityLog[]
+  workspaces    WorkspaceUser[]
+  assignedTasks Task[]          @relation("TaskAssignee")
+  createdTasks  Task[]          @relation("TaskCreator")
+  activityLogs  ActivityLog[]
 }
 
 model Workspace {
@@ -63,13 +64,15 @@ model Task {
   priority    Priority   @default(MEDIUM)
   projectId   Int
   assigneeId  Int?
+  createdById Int
   createdAt   DateTime   @default(now())
 
   //soft delete fields
   deletedAt DateTime?
 
-  project  Project @relation(fields: [projectId], references: [id])
-  assignee User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  project   Project @relation(fields: [projectId], references: [id])
+  assignee  User?   @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  createdBy User    @relation("TaskCreator", fields: [createdById], references: [id])
 }
 
 enum Role {

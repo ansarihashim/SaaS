@@ -4,7 +4,10 @@ import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { tasksAPI, projectsAPI } from "../services/api";
 import CreateTaskModal from "../components/modals/CreateTaskModal";
-import { FiPlus, FiMoreVertical, FiTrash2, FiRotateCcw, FiUser } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+
+// Single source of truth for status order
+const STATUS_ORDER = ["TODO", "IN_PROGRESS", "DONE"];
 
 export default function Tasks() {
   const { activeWorkspace, loading: workspaceLoading } = useWorkspace();
@@ -195,6 +198,23 @@ export default function Tasks() {
     DONE: tasks.filter(t => t.status === "DONE" && !t.deletedAt),
   };
 
+  const handleMoveTask = async (taskId, newStatus) => {
+    try {
+      const response = await tasksAPI.updateStatus(taskId, newStatus);
+      const updatedTask = response.data.task;
+      
+      // Merge updated task into state without refetching
+      setTasks(prevTasks => 
+        prevTasks.map(task => 
+          task.id === taskId ? { ...task, ...updatedTask } : task
+        )
+      );
+    } catch (err) {
+      console.error("Error moving task:", err);
+      alert(err.response?.data?.message || "Failed to move task");
+    }
+  };
+
   return (
     <DashboardLayout>
       <Topbar
@@ -265,36 +285,18 @@ export default function Tasks() {
         {/* Kanban Board */}
         {!loading && !error && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <KanbanColumn
-              title="To Do"
-              status="TODO"
-              tasks={tasksByStatus.TODO}
-              onStatusChange={handleStatusChange}
-              onDelete={handleDeleteTask}
-              onRestore={handleRestoreTask}
-              onEdit={canManageTasks ? handleEditTask : null}
-              canManage={canManageTasks}
-            />
-            <KanbanColumn
-              title="In Progress"
-              status="IN_PROGRESS"
-              tasks={tasksByStatus.IN_PROGRESS}
-              onStatusChange={handleStatusChange}
-              onDelete={handleDeleteTask}
-              onRestore={handleRestoreTask}
-              onEdit={canManageTasks ? handleEditTask : null}
-              canManage={canManageTasks}
-            />
-            <KanbanColumn
-              title="Done"
-              status="DONE"
-              tasks={tasksByStatus.DONE}
-              onStatusChange={handleStatusChange}
-              onDelete={handleDeleteTask}
-              onRestore={handleRestoreTask}
-              onEdit={canManageTasks ? handleEditTask : null}
-              canManage={canManageTasks}
-            />
+            {STATUS_ORDER.map((status) => (
+              <KanbanColumn
+                key={status}
+                title={status === "TODO" ? "To Do" : status === "IN_PROGRESS" ? "In Progress" : "Done"}
+                status={status}
+                tasks={tasksByStatus[status]}
+                onMove={handleMoveTask}
+                onDelete={handleDeleteTask}
+                onEdit={canManageTasks ? handleEditTask : null}
+                canManage={canManageTasks}
+              />
+            ))}
           </div>
         )}
 
@@ -327,15 +329,21 @@ export default function Tasks() {
   );
 }
 
-function KanbanColumn({ title, status, tasks, onStatusChange, onDelete, onRestore, onEdit, canManage }) {
+function KanbanColumn({ title, status, tasks, onMove, onDelete, onEdit, canManage }) {
   const statusColors = {
     TODO: "bg-gray-100 text-gray-800",
     IN_PROGRESS: "bg-blue-100 text-blue-800",
     DONE: "bg-green-100 text-green-800",
   };
 
+  const columnBgColors = {
+    TODO: "bg-gray-100",
+    IN_PROGRESS: "bg-purple-100",
+    DONE: "bg-green-100",
+  };
+
   return (
-    <div className="bg-gray-50 rounded-lg p-4">
+    <div className={`${columnBgColors[status]} rounded-xl p-4 min-h-[80vh]`}>
       {/* Column Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-gray-900">{title}</h3>
@@ -350,166 +358,133 @@ function KanbanColumn({ title, status, tasks, onStatusChange, onDelete, onRestor
           <TaskCard
             key={task.id}
             task={task}
-            onStatusChange={onStatusChange}
+            onMove={onMove}
             onDelete={onDelete}
-            onRestore={onRestore}
             onEdit={onEdit}
             canManage={canManage}
           />
         ))}
-
-        {tasks.length === 0 && (
-          <div className="text-center py-8 text-gray-400 text-sm">
-            No tasks
-          </div>
-        )}
       </div>
     </div>
   );
 }
 
-function TaskCard({ task, onStatusChange, onDelete, onRestore, onEdit, canManage }) {
-  const [showMenu, setShowMenu] = useState(false);
-
+function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
   const priorityColors = {
     LOW: "bg-green-100 text-green-800",
     MEDIUM: "bg-yellow-100 text-yellow-800",
     HIGH: "bg-red-100 text-red-800",
   };
 
-  const handleStatusChange = (newStatus) => {
-    if (newStatus !== task.status) {
-      onStatusChange(task.id, newStatus);
-    }
-    setShowMenu(false);
+  // Calculate movement permissions dynamically
+  const currentIndex = STATUS_ORDER.indexOf(task.status);
+  const canMoveLeft = currentIndex > 0;
+  const canMoveRight = currentIndex < STATUS_ORDER.length - 1;
+  const leftStatus = canMoveLeft ? STATUS_ORDER[currentIndex - 1] : null;
+  const rightStatus = canMoveRight ? STATUS_ORDER[currentIndex + 1] : null;
+
+  // Generate assignee initials
+  const getInitials = (name) => {
+    if (!name) return null;
+    const parts = name.trim().split(' ');
+    if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase();
+    return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
   };
 
-  return (
-    <div className="bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all duration-200 group">
-      {/* Task Header */}
-      <div className="flex items-start justify-between mb-2">
-        <div className="flex items-start gap-2 flex-1">
-          <h4 className="font-medium text-gray-900 flex-1">{task.title}</h4>
-          {onEdit && !task.deletedAt && (
-            <button
-              onClick={(e) => {
-                e.stopPropagation();
-                onEdit(task);
-              }}
-              className="opacity-0 group-hover:opacity-100 p-1 hover:bg-gray-100 rounded transition-all"
-              title="Edit Task"
-            >
-              <svg className="w-3.5 h-3.5 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
-              </svg>
-            </button>
-          )}
-        </div>
-        {canManage && (
-          <div className="relative ml-2">
-            <button
-              onClick={() => setShowMenu(!showMenu)}
-              className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100"
-            >
-              <FiMoreVertical className="w-4 h-4" />
-            </button>
+  const assigneeInitials = task.assignee?.name ? getInitials(task.assignee.name) : null;
 
-            {showMenu && (
-              <div className="absolute right-0 mt-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-10">
-                <div className="py-1">
-                  <div className="px-3 py-2 text-xs font-semibold text-gray-500 uppercase">
-                    Move to
-                  </div>
-                  {task.status !== "TODO" && (
-                    <button
-                      onClick={() => handleStatusChange("TODO")}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      To Do
-                    </button>
-                  )}
-                  {task.status !== "IN_PROGRESS" && (
-                    <button
-                      onClick={() => handleStatusChange("IN_PROGRESS")}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      In Progress
-                    </button>
-                  )}
-                  {task.status !== "DONE" && (
-                    <button
-                      onClick={() => handleStatusChange("DONE")}
-                      className="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
-                    >
-                      Done
-                    </button>
-                  )}
-                  <div className="border-t border-gray-100 my-1"></div>
-                  {task.deletedAt ? (
-                    <button
-                      onClick={() => {
-                        onRestore(task.id);
-                        setShowMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-green-600 hover:bg-green-50 flex items-center gap-2"
-                    >
-                      <FiRotateCcw className="w-4 h-4" />
-                      Restore Task
-                    </button>
-                  ) : (
-                    <button
-                      onClick={() => {
-                        onDelete(task.id, task.title);
-                        setShowMenu(false);
-                      }}
-                      className="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                    >
-                      <FiTrash2 className="w-4 h-4" />
-                      Delete Task
-                    </button>
-                  )}
-                </div>
-              </div>
-            )}
-          </div>
+  return (
+    <div className="group relative bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all duration-300 ease-in-out min-h-45 flex flex-col justify-between animate-fadeIn">
+      {/* Hover Actions - Top Right */}
+      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        {canManage && onEdit && (
+          <button
+            onClick={() => onEdit(task)}
+            className="p-1.5 hover:bg-purple-50 rounded transition-colors"
+            title="Edit Task"
+          >
+            <FiEdit2 className="w-4 h-4 text-purple-600" />
+          </button>
+        )}
+        {canManage && (
+          <button
+            onClick={() => onDelete(task.id, task.title)}
+            className="p-1.5 hover:bg-red-50 rounded transition-colors"
+            title="Delete Task"
+          >
+            <FiTrash2 className="w-4 h-4 text-red-600" />
+          </button>
         )}
       </div>
 
-      {/* Task Description */}
-      {task.description && (
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2">
-          {task.description}
+      {/* Card Content */}
+      <div className="flex-1">
+        {/* Task Header */}
+        <div className="mb-1 pr-16">
+          <h4 className="font-medium text-gray-900">{task.title}</h4>
+        </div>
+
+        {/* Created By - ALWAYS VISIBLE */}
+        <p className="text-xs text-gray-500 mb-2 min-h-4">
+          by {task.createdBy?.name || "Unknown"}
         </p>
-      )}
 
-      {/* Task Metadata */}
-      <div className="flex items-center gap-2 flex-wrap">
-        {/* Priority Badge */}
-        <span className={`px-2 py-1 rounded text-xs font-medium ${priorityColors[task.priority]}`}>
-          {task.priority}
-        </span>
+        {/* Task Description */}
+        <p className="text-sm text-gray-600 mb-3 line-clamp-2 min-h-10">
+          {task.description || ''}
+        </p>
 
-        {/* Project Name */}
-        {task.project && (
-          <span className="px-2 py-1 rounded bg-purple-100 text-purple-800 text-xs font-medium">
-            {task.project.name}
+        {/* Task Metadata */}
+        <div className="flex items-center gap-2 flex-wrap">
+          {/* Priority Badge */}
+          <span className={`px-2 py-1 rounded text-xs font-medium ${priorityColors[task.priority]}`}>
+            {task.priority}
           </span>
-        )}
 
-        {/* Assignee */}
-        {task.assignee && (
-          <div className="flex items-center gap-1 text-xs text-gray-500">
-            <FiUser className="w-3 h-3" />
-            <span>{task.assignee.name}</span>
+          {/* Project Name */}
+          {task.project && (
+            <span className="px-2 py-1 rounded bg-purple-100 text-purple-800 text-xs font-medium">
+              {task.project.name}
+            </span>
+          )}
+        </div>
+      </div>
+
+      {/* Bottom Section - Assignee and Move Actions */}
+      <div className="mt-3 space-y-2">
+        {/* Assignee Initials */}
+        {assigneeInitials && (
+          <div className="flex justify-end">
+            <div 
+              className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-semibold transition-transform hover:scale-110"
+              title={task.assignee?.name || 'Assigned to'}
+            >
+              {assigneeInitials}
+            </div>
           </div>
         )}
 
-        {/* Deleted Badge */}
-        {task.deletedAt && (
-          <span className="px-2 py-1 rounded bg-red-100 text-red-800 text-xs font-medium">
-            Deleted
-          </span>
-        )}
+        {/* Move Actions - Always reserve space */}
+        <div className="min-h-9 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {canManage && canMoveLeft && (
+            <button
+              onClick={() => onMove(task.id, leftStatus)}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded transition-all duration-200 hover:scale-105"
+            >
+              <FiChevronLeft className="w-4 h-4" />
+              Move Left
+            </button>
+          )}
+          {canManage && canMoveRight && (
+            <button
+              onClick={() => onMove(task.id, rightStatus)}
+              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium rounded transition-all duration-200 hover:scale-105"
+            >
+              Move Right
+              <FiChevronRight className="w-4 h-4" />
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

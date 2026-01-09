@@ -46,7 +46,19 @@ exports.createTask = async (req, res) => {
         description,
         priority,
         projectId,
-        assigneeId
+        assigneeId,
+        createdById: userId
+      },
+      include: {
+        createdBy: {
+          select: { id: true, name: true }
+        },
+        assignee: {
+          select: { id: true, name: true }
+        },
+        project: {
+          select: { id: true, name: true }
+        }
       }
     });
   
@@ -139,8 +151,14 @@ exports.getTasksByProject = async (req, res) => {
         [sort]: order
       },
       include: {
+        createdBy: {
+          select: { id: true, name: true }
+        },
         assignee: {
           select: { id: true, name: true, email: true }
+        },
+        project: {
+          select: { id: true, name: true }
         }
       }
     });
@@ -217,7 +235,18 @@ exports.updateTaskStatus = async (req, res) => {
     // 4️⃣ Update status
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
-      data: { status }
+      data: { status },
+      include: {
+        createdBy: {
+          select: { id: true, name: true }
+        },
+        assignee: {
+          select: { id: true, name: true }
+        },
+        project: {
+          select: { id: true, name: true }
+        }
+      }
     });
    
     await prisma.activityLog.create({
@@ -288,6 +317,17 @@ exports.updateTask = async (req, res) => {
         ...(title && { title }),
         ...(description !== undefined && { description }),
         ...(priority && { priority })
+      },
+      include: {
+        createdBy: {
+          select: { id: true, name: true }
+        },
+        assignee: {
+          select: { id: true, name: true }
+        },
+        project: {
+          select: { id: true, name: true }
+        }
       }
     });
 
@@ -377,7 +417,18 @@ exports.reassignTask = async (req, res) => {
     // 4️⃣ Reassign task
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
-      data: { assigneeId }
+      data: { assigneeId },
+      include: {
+        createdBy: {
+          select: { id: true, name: true }
+        },
+        assignee: {
+          select: { id: true, name: true }
+        },
+        project: {
+          select: { id: true, name: true }
+        }
+      }
     });
 
     await prisma.activityLog.create({
