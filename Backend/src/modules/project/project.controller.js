@@ -21,7 +21,13 @@ exports.createProject = async (req, res) => {
       data: {
         name,
         description,
-        workspaceId
+        workspaceId,
+        createdById: req.userId
+      },
+      include: {
+        createdBy: {
+          select: { id: true, name: true }
+        }
       }
     });
 
@@ -68,6 +74,9 @@ exports.getProjects = async (req, res) => {
         deletedAt: null
       },
       include: {
+        createdBy: {
+          select: { id: true, name: true }
+        },
         tasks: {
           where: {
             deletedAt: null
@@ -150,6 +159,11 @@ exports.updateProject = async (req, res) => {
       data: {
         ...(name && { name }),
         ...(description !== undefined && { description })
+      },
+      include: {
+        createdBy: {
+          select: { id: true, name: true }
+        }
       }
     });
 

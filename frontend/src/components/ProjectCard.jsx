@@ -1,8 +1,21 @@
-import { FiCalendar, FiMoreVertical } from "react-icons/fi";
+import { FiCalendar, FiEdit2, FiTrash2 } from "react-icons/fi";
+import { useNavigate } from "react-router-dom";
 
 export default function ProjectCard({ project, onEdit, onDelete }) {
-  const { name, description, createdAt, stats } = project;
+  const navigate = useNavigate();
+  const { id, name, description, createdAt, createdBy, stats } = project;
   const { totalTasks, inProgressTasks, progressPercent } = stats;
+
+  // Generate creator initials (reusable utility)
+  const getInitials = (name = "") =>
+    name
+      .split(" ")
+      .map(word => word[0])
+      .join("")
+      .slice(0, 2)
+      .toUpperCase();
+
+  const creatorInitials = createdBy?.name ? getInitials(createdBy.name) : null;
 
   // Format date as "Created X days ago"
   const formatCreatedAt = (dateString) => {
@@ -19,21 +32,46 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:border-purple-300 transition-all duration-200">
-      {/* Header */}
-      <div className="flex items-start justify-between mb-4">
-        <div className="flex-1">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{name}</h3>
-          <p className="text-sm text-gray-600 line-clamp-2">
-            {description || "No description"}
-          </p>
+    <div 
+      onClick={() => navigate(`/projects/${id}/tasks`)}
+      className="group relative bg-white rounded-xl border border-gray-200 p-6 shadow-sm hover:shadow-md hover:border-purple-300 transition-all duration-200 cursor-pointer"
+    >
+      {/* Hover Actions - Top Right */}
+      {(onEdit || onDelete) && (
+        <div className="absolute top-4 right-4 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          {onEdit && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onEdit(project);
+              }}
+              className="p-1.5 hover:bg-purple-50 rounded transition-colors"
+              title="Edit Project"
+            >
+              <FiEdit2 className="w-4 h-4 text-purple-600" />
+            </button>
+          )}
+          {onDelete && (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onDelete(project.id, project.name);
+              }}
+              className="p-1.5 hover:bg-red-50 rounded transition-colors"
+              title="Delete Project"
+            >
+              <FiTrash2 className="w-4 h-4 text-red-600" />
+            </button>
+          )}
         </div>
-        <button 
-          className="text-gray-400 hover:text-gray-600 p-1 rounded hover:bg-gray-100 transition-colors"
-          title="More actions"
-        >
-          <FiMoreVertical className="w-5 h-5" />
-        </button>
+      )}
+
+      {/* Header */}
+      <div className="mb-4">
+        <h3 className="text-xl font-bold text-gray-900 mb-2 pr-16">{name}</h3>
+        <p className="text-sm text-gray-600 line-clamp-2">
+          {description || "No description"}
+        </p>
       </div>
 
       {/* Progress Section */}
@@ -67,9 +105,21 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
       </div>
 
       {/* Footer */}
-      <div className="flex items-center text-xs text-gray-500">
-        <FiCalendar className="w-4 h-4 mr-1.5" />
-        {formatCreatedAt(createdAt)}
+      <div className="flex items-center justify-between">
+        <div className="flex items-center text-xs text-gray-500">
+          <FiCalendar className="w-4 h-4 mr-1.5" />
+          {formatCreatedAt(createdAt)}
+        </div>
+        
+        {/* Creator Initials Badge */}
+        {creatorInitials && (
+          <div 
+            className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-semibold transition-transform hover:scale-110"
+            title={`Created by ${createdBy?.name || 'Unknown'}`}
+          >
+            {creatorInitials}
+          </div>
+        )}
       </div>
     </div>
   );

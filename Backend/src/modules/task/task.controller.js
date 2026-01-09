@@ -57,7 +57,13 @@ exports.createTask = async (req, res) => {
           select: { id: true, name: true }
         },
         project: {
-          select: { id: true, name: true }
+          select: { 
+            id: true, 
+            name: true,
+            createdBy: {
+              select: { id: true, name: true }
+            }
+          }
         }
       }
     });
@@ -158,7 +164,13 @@ exports.getTasksByProject = async (req, res) => {
           select: { id: true, name: true, email: true }
         },
         project: {
-          select: { id: true, name: true }
+          select: { 
+            id: true, 
+            name: true,
+            createdBy: {
+              select: { id: true, name: true }
+            }
+          }
         }
       }
     });
@@ -244,7 +256,13 @@ exports.updateTaskStatus = async (req, res) => {
           select: { id: true, name: true }
         },
         project: {
-          select: { id: true, name: true }
+          select: { 
+            id: true, 
+            name: true,
+            createdBy: {
+              select: { id: true, name: true }
+            }
+          }
         }
       }
     });
@@ -326,7 +344,13 @@ exports.updateTask = async (req, res) => {
           select: { id: true, name: true }
         },
         project: {
-          select: { id: true, name: true }
+          select: { 
+            id: true, 
+            name: true,
+            createdBy: {
+              select: { id: true, name: true }
+            }
+          }
         }
       }
     });
@@ -426,7 +450,13 @@ exports.reassignTask = async (req, res) => {
           select: { id: true, name: true }
         },
         project: {
-          select: { id: true, name: true }
+          select: { 
+            id: true, 
+            name: true,
+            createdBy: {
+              select: { id: true, name: true }
+            }
+          }
         }
       }
     });

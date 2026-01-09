@@ -233,8 +233,8 @@ export default function Projects() {
               <ProjectCard 
                 key={project.id} 
                 project={project}
-                onEdit={canCreateProject ? () => handleEditProject(project) : null}
-                onDelete={canCreateProject ? () => handleDeleteProject(project.id, project.name) : null}
+                onEdit={canCreateProject ? handleEditProject : null}
+                onDelete={canCreateProject ? handleDeleteProject : null}
               />
             ))}
           </div>

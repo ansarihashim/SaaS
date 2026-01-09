@@ -14,10 +14,11 @@ model User {
   password  String
   createdAt DateTime @default(now())
 
-  workspaces    WorkspaceUser[]
-  assignedTasks Task[]          @relation("TaskAssignee")
-  createdTasks  Task[]          @relation("TaskCreator")
-  activityLogs  ActivityLog[]
+  workspaces     WorkspaceUser[]
+  assignedTasks  Task[]          @relation("TaskAssignee")
+  createdTasks   Task[]          @relation("TaskCreator")
+  createdProjects Project[]      @relation("ProjectCreator")
+  activityLogs   ActivityLog[]
 }
 
 model Workspace {
@@ -49,10 +50,12 @@ model Project {
   name        String
   description String?
   workspaceId Int
+  createdById Int
   createdAt   DateTime  @default(now())
   deletedAt   DateTime?
 
   workspace Workspace @relation(fields: [workspaceId], references: [id])
+  createdBy User      @relation("ProjectCreator", fields: [createdById], references: [id])
   tasks     Task[]
 }
 

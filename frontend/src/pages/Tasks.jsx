@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
@@ -10,6 +11,7 @@ import { FiPlus, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from "react-
 const STATUS_ORDER = ["TODO", "IN_PROGRESS", "DONE"];
 
 export default function Tasks() {
+  const { projectId } = useParams(); // Extract projectId from URL
   const { activeWorkspace, loading: workspaceLoading } = useWorkspace();
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
@@ -18,13 +20,20 @@ export default function Tasks() {
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [creating, setCreating] = useState(false);
-  const [selectedProject, setSelectedProject] = useState("all");
+  const [selectedProject, setSelectedProject] = useState(projectId || "all");
 
   useEffect(() => {
     if (activeWorkspace) {
       fetchProjects();
     }
   }, [activeWorkspace]);
+
+  // Sync selectedProject with URL params
+  useEffect(() => {
+    if (projectId) {
+      setSelectedProject(projectId);
+    }
+  }, [projectId]);
 
   useEffect(() => {
     if (activeWorkspace && selectedProject) {
@@ -392,6 +401,7 @@ function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
   };
 
   const assigneeInitials = task.assignee?.name ? getInitials(task.assignee.name) : null;
+  const projectCreatorInitials = task.project?.createdBy?.name ? getInitials(task.project.createdBy.name) : null;
 
   return (
     <div className="group relative bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all duration-300 ease-in-out min-h-45 flex flex-col justify-between animate-fadeIn">
@@ -450,19 +460,30 @@ function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
         </div>
       </div>
 
-      {/* Bottom Section - Assignee and Move Actions */}
+      {/* Bottom Section - Assignee, Project Creator, and Move Actions */}
       <div className="mt-3 space-y-2">
-        {/* Assignee Initials */}
-        {assigneeInitials && (
-          <div className="flex justify-end">
+        {/* Initials Badges */}
+        <div className="flex justify-end gap-2">
+          {/* Assignee Initials */}
+          {assigneeInitials && (
             <div 
               className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-semibold transition-transform hover:scale-110"
-              title={task.assignee?.name || 'Assigned to'}
+              title={`Assigned to ${task.assignee?.name || 'Unknown'}`}
             >
               {assigneeInitials}
             </div>
-          </div>
-        )}
+          )}
+          
+          {/* Project Creator Initials */}
+          {projectCreatorInitials && (
+            <div 
+              className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold transition-transform hover:scale-110"
+              title={`Project by ${task.project?.createdBy?.name || 'Unknown'}`}
+            >
+              {projectCreatorInitials}
+            </div>
+          )}
+        </div>
 
         {/* Move Actions - Always reserve space */}
         <div className="min-h-9 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
