@@ -103,6 +103,17 @@ export default function Team() {
       <Topbar
         title="Team Members"
         subtitle={`Manage team in ${activeWorkspace.name}`}
+        action={
+          canInvite && (
+            <button 
+              onClick={() => setShowInviteModal(true)}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200 flex items-center gap-2 font-medium"
+            >
+              <FiPlus className="w-5 h-5" />
+              <span>Invite Member</span>
+            </button>
+          )
+        }
       />
 
       {/* Invite Member Modal */}
@@ -114,20 +125,7 @@ export default function Team() {
         currentWorkspace={activeWorkspace}
       />
 
-      <div className="p-6">
-        {/* Invite Member Button */}
-        {canInvite && (
-          <div className="mb-6">
-            <button 
-              onClick={() => setShowInviteModal(true)}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200 flex items-center gap-2"
-            >
-              <FiPlus className="w-5 h-5" />
-              <span>Invite Member</span>
-            </button>
-          </div>
-        )}
-
+      <div>
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center h-64">

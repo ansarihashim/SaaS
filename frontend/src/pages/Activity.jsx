@@ -100,7 +100,7 @@ export default function Activity() {
           title="Activity"
           subtitle={activeWorkspace ? `Activity logs in ${activeWorkspace.name}` : "Activity"}
         />
-        <div className="p-6">
+        <div>
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
             <h3 className="text-lg font-semibold text-yellow-800 mb-2">
               Access Restricted
@@ -121,7 +121,7 @@ export default function Activity() {
         subtitle={activeWorkspace ? `Activity logs in ${activeWorkspace.name}` : "Activity"}
       />
 
-      <div className="p-6">
+      <div>
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center h-64">

@@ -18,189 +18,170 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
   const [showWorkspaceMenu, setShowWorkspaceMenu] = useState(false);
 
   return (
-    <>
-      <aside 
-        className={`hidden md:block relative bg-white min-h-screen transition-all duration-300 ease-in-out ${
-          collapsed ? 'w-[72px]' : 'w-[260px]'
-        } px-4 py-6`}
-      >
-        {/* Logo */}
-        {!collapsed && (
-          <div className="mb-8 px-2">
-            <div className="flex items-center gap-2">
-              <div className="w-10 h-10 rounded-lg bg-purple-600 flex items-center justify-center">
-                <span className="text-white font-bold text-lg">T</span>
-              </div>
-              <h1 className="text-xl font-extrabold text-gray-900">
-                TaskFlow
-              </h1>
-            </div>
+    <aside 
+      className={`hidden md:flex flex-col bg-white min-h-screen border-r border-gray-200 transition-all duration-300 ease-in-out ${
+        collapsed ? 'w-16' : 'w-64'
+      } py-6`}
+    >
+      {/* Sidebar Header */}
+      <div className={`flex items-center ${collapsed ? 'flex-col gap-4 justify-center' : 'justify-between px-4'} mb-8 transition-all duration-300`}>
+        {/* Logo & Title */}
+        <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
+          <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center shrink-0">
+            <span className="text-white font-bold text-lg">T</span>
           </div>
-        )}
-        
-        {collapsed && (
-          <div className="flex justify-center mb-8">
-            <div className="w-10 h-10 rounded-lg bg-purple-600 text-white flex items-center justify-center font-bold text-lg">
-              T
-            </div>
-          </div>
-        )}
-
-        {/* Workspace Selector */}
-        {activeWorkspace && !collapsed && (
-          <div className="mb-8 relative px-2">
-            <button
-              onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
-              className="w-full px-3 py-2 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition"
-            >
-              <div className="flex items-center gap-2">
-                <div className="w-8 h-8 rounded bg-purple-600 text-white flex items-center justify-center font-semibold text-sm">
-                  {activeWorkspace.name.charAt(0).toUpperCase()}
-                </div>
-                <div className="text-left">
-                  <p className="text-base font-bold text-gray-900">{activeWorkspace.name}</p>
-                  <p className="text-xs text-gray-500">Workspace</p>
-                </div>
-              </div>
-              <svg className="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-
-            {/* Workspace Dropdown */}
-            {showWorkspaceMenu && workspaces.length > 1 && (
-              <div className="absolute top-full left-0 right-0 mt-2 bg-white border rounded-lg shadow-lg z-10 max-h-64 overflow-y-auto">
-                {workspaces.map((workspace) => (
-                  <button
-                    key={workspace.id}
-                    onClick={() => {
-                      selectWorkspace(workspace);
-                      setShowWorkspaceMenu(false);
-                    }}
-                    className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition flex items-center gap-2 ${
-                      workspace.id === activeWorkspace.id ? 'bg-purple-50' : ''
-                    }`}
-                  >
-                    <div className="w-8 h-8 rounded bg-purple-600 text-white flex items-center justify-center font-semibold text-sm">
-                      {workspace.name.charAt(0).toUpperCase()}
-                    </div>
-                    <div>
-                      <p className="text-sm font-medium text-gray-900">{workspace.name}</p>
-                      <p className="text-xs text-gray-500">Workspace</p>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Collapsed Workspace Icon */}
-        {activeWorkspace && collapsed && (
-          <div className="mb-8 flex justify-center">
-            <div className="w-10 h-10 rounded bg-purple-600 text-white flex items-center justify-center font-semibold text-sm">
-              {activeWorkspace.name.charAt(0).toUpperCase()}
-            </div>
-          </div>
-        )}
-
-        {/* Navigation */}
-        <nav className="space-y-2 px-2">
-          {navItems.map((item) => {
-            const Icon = item.icon;
-            const isDisabled = !activeWorkspace && item.path !== '/';
-            
-            if (isDisabled) {
-              return (
-                <div
-                  key={item.name}
-                  className={`flex items-center gap-3 px-3 py-3 rounded-lg text-gray-400 cursor-not-allowed ${
-                    collapsed ? 'justify-center' : ''
-                  }`}
-                  title={collapsed ? `${item.name} (No workspace)` : 'Select a workspace first'}
-                >
-                  <Icon className="w-5 h-5 shrink-0" />
-                  {!collapsed && <span className="text-base font-medium">{item.name}</span>}
-                </div>
-              );
-            }
-            
-            return (
-              <NavLink
-                key={item.name}
-                to={item.path}
-                className={({ isActive }) =>
-                  `flex items-center gap-3 px-3 py-3 rounded-lg transition-all duration-200 hover:scale-105 ${
-                    isActive
-                      ? "bg-purple-50 text-purple-600 font-semibold"
-                      : "text-gray-700 hover:bg-gray-50 font-medium"
-                  } ${collapsed ? 'justify-center' : ''}`
-                }
-                title={collapsed ? item.name : ''}
-              >
-                <Icon className="w-5 h-5 shrink-0" />
-                {!collapsed && <span className="text-base">{item.name}</span>}
-              </NavLink>
-            );
-          })}
-        </nav>
-
-        {/* User Info & Logout */}
-        <div className="absolute bottom-6 left-4 right-4">
-          {!collapsed ? (
-            <div className="space-y-2 px-2">
-              <div className="flex items-center gap-3 px-2 py-2">
-                <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700 text-sm">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
-                  <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
-                </div>
-              </div>
-              <button
-                onClick={logout}
-                className="w-full flex items-center gap-3 px-3 py-3 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition"
-              >
-                <MdLogout className="w-5 h-5" />
-                <span className="text-base font-medium">Logout</span>
-              </button>
-            </div>
-          ) : (
-            <div className="space-y-2">
-              <div className="flex justify-center">
-                <div className="w-10 h-10 rounded-full bg-purple-200 flex items-center justify-center font-semibold text-purple-700 text-sm">
-                  {user?.name?.charAt(0).toUpperCase() || 'U'}
-                </div>
-              </div>
-              <button
-                onClick={logout}
-                className="w-full flex justify-center px-2 py-2.5 rounded-lg text-gray-600 hover:bg-red-50 hover:text-red-600 transition"
-                title="Logout"
-              >
-                <MdLogout className="w-5 h-5" />
-              </button>
-            </div>
+          {!collapsed && (
+            <h1 className="text-xl font-extrabold text-gray-900 truncate">
+              TaskFlow
+            </h1>
           )}
         </div>
-      </aside>
 
-      {/* Collapse Toggle Arrow */}
-      <button
-        onClick={onToggleCollapse}
-        className="hidden md:block fixed top-20 z-50 bg-white border border-gray-200 rounded-full p-1.5 shadow-md hover:shadow-lg hover:scale-110 transition-all duration-200"
-        style={{
-          left: collapsed ? '60px' : '248px',
-          transition: 'left 0.3s ease-in-out'
-        }}
-        title={collapsed ? 'Expand sidebar' : 'Collapse sidebar'}
-      >
-        {collapsed ? (
-          <MdChevronRight className="w-5 h-5 text-gray-600" />
+        {/* Toggle Arrow */}
+        <button
+          onClick={onToggleCollapse}
+          className="rounded-full p-1 hover:bg-gray-100 transition-all duration-200 cursor-pointer text-gray-500 focus:outline-none focus:ring-2 focus:ring-purple-200"
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        >
+          {collapsed ? (
+            <MdChevronRight className="w-5 h-5" />
+          ) : (
+            <MdChevronLeft className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+
+      {/* Workspace Selector */}
+      {activeWorkspace && (
+        <div className={`mb-6 relative ${collapsed ? 'px-2 flex justify-center' : 'px-4'}`}>
+          {!collapsed ? (
+            <>
+              <button
+                onClick={() => setShowWorkspaceMenu(!showWorkspaceMenu)}
+                className="w-full px-3 py-2 bg-gray-50 rounded-lg flex items-center justify-between hover:bg-gray-100 transition border border-transparent hover:border-gray-200"
+              >
+                <div className="flex items-center gap-2 overflow-hidden">
+                  <div className="w-6 h-6 rounded bg-purple-600 text-white flex items-center justify-center font-semibold text-xs shrink-0">
+                    {activeWorkspace.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="text-left min-w-0">
+                    <p className="text-sm font-bold text-gray-900 truncate">{activeWorkspace.name}</p>
+                    <p className="text-[10px] text-gray-500 uppercase tracking-wide">Workspace</p>
+                  </div>
+                </div>
+                <MdChevronRight className={`w-4 h-4 text-gray-400 transition-transform ${showWorkspaceMenu ? 'rotate-90' : ''}`} />
+              </button>
+
+              {/* Workspace Dropdown */}
+              {showWorkspaceMenu && workspaces.length > 1 && (
+                <div className="absolute top-full left-4 right-4 mt-2 bg-white border border-gray-100 rounded-lg shadow-xl z-20 max-h-64 overflow-y-auto">
+                  {workspaces.map((workspace) => (
+                    <button
+                      key={workspace.id}
+                      onClick={() => {
+                        selectWorkspace(workspace);
+                        setShowWorkspaceMenu(false);
+                      }}
+                      className={`w-full px-4 py-3 text-left hover:bg-gray-50 transition flex items-center gap-2 ${
+                        workspace.id === activeWorkspace.id ? 'bg-purple-50' : ''
+                      }`}
+                    >
+                      <div className="w-6 h-6 rounded bg-purple-600 text-white flex items-center justify-center font-semibold text-xs">
+                        {workspace.name.charAt(0).toUpperCase()}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{workspace.name}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              )}
+            </>
+          ) : (
+             <div className="w-8 h-8 rounded bg-purple-600 text-white flex items-center justify-center font-semibold text-sm" title={activeWorkspace.name}>
+                {activeWorkspace.name.charAt(0).toUpperCase()}
+             </div>
+          )}
+        </div>
+      )}
+
+      {/* Navigation */}
+      <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
+        {navItems.map((item) => {
+          const Icon = item.icon;
+          const isDisabled = !activeWorkspace && item.path !== '/';
+          
+          if (isDisabled) {
+            return (
+              <div
+                key={item.name}
+                className={`flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 cursor-not-allowed ${
+                  collapsed ? 'justify-center' : ''
+                }`}
+                title={collapsed ? `${item.name} (No workspace)` : 'Select a workspace first'}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                {!collapsed && <span className="text-sm font-medium">{item.name}</span>}
+              </div>
+            );
+          }
+          
+          return (
+            <NavLink
+              key={item.name}
+              to={item.path}
+              className={({ isActive }) =>
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${
+                  isActive
+                    ? "bg-purple-50 text-purple-600 font-semibold"
+                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                } ${collapsed ? 'justify-center' : ''}`
+              }
+              title={collapsed ? item.name : ''}
+            >
+              <Icon className="w-5 h-5 shrink-0" />
+              {!collapsed && <span className="text-sm truncate">{item.name}</span>}
+            </NavLink>
+          );
+        })}
+      </nav>
+
+      {/* User Info & Logout */}
+      <div className={`mt-auto pt-4 border-t border-gray-100 ${collapsed ? 'px-2' : 'px-4'}`}>
+        {!collapsed ? (
+          <div className="space-y-1">
+            <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-default">
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center font-semibold text-white text-xs shrink-0">
+                {user?.name?.charAt(0).toUpperCase() || 'U'}
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-gray-900 truncate">{user?.name || 'User'}</p>
+                <p className="text-xs text-gray-500 truncate">{user?.email || ''}</p>
+              </div>
+            </div>
+            <button
+              onClick={logout}
+              className="w-full flex items-center gap-3 px-3 py-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+            >
+              <MdLogout className="w-5 h-5 shrink-0" />
+              <span className="text-sm font-medium">Logout</span>
+            </button>
+          </div>
         ) : (
-          <MdChevronLeft className="w-5 h-5 text-gray-600" />
+          <div className="flex flex-col items-center gap-4">
+            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center font-semibold text-white text-xs" title={user?.name}>
+              {user?.name?.charAt(0).toUpperCase() || 'U'}
+            </div>
+            <button
+              onClick={logout}
+              className="p-2 rounded-lg text-gray-500 hover:bg-red-50 hover:text-red-600 transition-colors"
+              title="Logout"
+            >
+              <MdLogout className="w-5 h-5" />
+            </button>
+          </div>
         )}
-      </button>
-    </>
+      </div>
+    </aside>
   );
 }

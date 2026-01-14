@@ -153,7 +153,7 @@ export default function Projects() {
         project={editingProject}
       />
 
-      <div className="p-6">
+      <div>
         {/* Loading State */}
         {loading && (
           <div className="flex items-center justify-center h-64">

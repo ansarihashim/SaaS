@@ -252,6 +252,17 @@ export default function Tasks() {
       <Topbar
         title="Tasks"
         subtitle={`Manage tasks in ${activeWorkspace.name}`}
+        action={
+          canManageTasks && (
+            <button
+              onClick={() => setShowCreateModal(true)}
+              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200 flex items-center gap-2 font-medium"
+            >
+              <FiPlus className="w-5 h-5" />
+              <span>Create Task</span>
+            </button>
+          )
+        }
       />
 
       <CreateTaskModal
@@ -274,10 +285,9 @@ export default function Tasks() {
         loading={isDeleting}
       />
 
-      <div className="p-6">
-        {/* Action Bar */}
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          {/* Project Filter */}
+      <div>
+        {/* Filter Bar */}
+        <div className="mb-6">
           <div className="flex items-center gap-2">
             <label htmlFor="projectFilter" className="text-sm font-medium text-gray-700">
               Filter by Project:
@@ -286,7 +296,7 @@ export default function Tasks() {
               id="projectFilter"
               value={selectedProject}
               onChange={(e) => setSelectedProject(e.target.value)}
-              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
             >
               <option value="all">All Projects</option>
               {projects.map(project => (
@@ -296,17 +306,6 @@ export default function Tasks() {
               ))}
             </select>
           </div>
-
-          {/* Create Task Button */}
-          {canManageTasks && (
-            <button
-              onClick={() => setShowCreateModal(true)}
-              className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 hover:shadow-md active:scale-95 transition-all duration-200 flex items-center gap-2"
-            >
-              <FiPlus className="w-5 h-5" />
-              <span>Create Task</span>
-            </button>
-          )}
         </div>
 
         {/* Loading State */}
