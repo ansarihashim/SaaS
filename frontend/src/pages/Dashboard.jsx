@@ -120,9 +120,9 @@ export default function Dashboard() {
 
       {/* Stats */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <StatCard label="Total Projects" value={stats.projects} icon={MdFolder} />
-        <StatCard label="Total Tasks" value={stats.tasks} icon={MdChecklist} />
-        <StatCard label="Team Members" value={stats.members} icon={MdGroup} />
+        <StatCard label="Total Projects" value={stats.projects} icon={MdFolder} to="/projects" />
+        <StatCard label="Total Tasks" value={stats.tasks} icon={MdChecklist} to="/tasks" />
+        <StatCard label="Team Members" value={stats.members} icon={MdGroup} to="/team" />
         <StatCard
           label="Completion Rate"
           value={`${stats.completionRate}%`}

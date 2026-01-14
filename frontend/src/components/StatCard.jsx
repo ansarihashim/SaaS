@@ -1,6 +1,23 @@
-export default function StatCard({ label, value, icon: Icon }) {
+import { useNavigate } from "react-router-dom";
+
+export default function StatCard({ label, value, icon: Icon, to }) {
+  const navigate = useNavigate();
+
+  const handleClick = () => {
+    if (to) {
+      navigate(to);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-xl p-6 border border-gray-200 shadow-sm transition-all duration-200 hover:border-purple-400 hover:shadow-md hover:-translate-y-0.5">
+    <div
+      onClick={handleClick}
+      className={`bg-white rounded-xl p-6 border border-gray-200 shadow-sm transition-all duration-200 ${
+        to
+          ? "cursor-pointer hover:border-purple-400 hover:shadow-md hover:scale-[1.02]"
+          : "hover:border-purple-400 hover:shadow-md hover:-translate-y-0.5"
+      }`}
+    >
       <div className="flex items-start justify-between">
         <div>
           <p className="text-sm text-gray-500 mb-2">{label}</p>
