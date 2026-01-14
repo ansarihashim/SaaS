@@ -3,8 +3,10 @@ import { useParams } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
+import { useToast } from "../contexts/ToastContext";
 import { tasksAPI, projectsAPI } from "../services/api";
 import CreateTaskModal from "../components/modals/CreateTaskModal";
+import ConfirmModal from "../components/modals/ConfirmModal";
 import { FiPlus, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from "react-icons/fi";
 
 // Single source of truth for status order
@@ -13,14 +15,23 @@ const STATUS_ORDER = ["TODO", "IN_PROGRESS", "DONE"];
 export default function Tasks() {
   const { projectId } = useParams(); // Extract projectId from URL
   const { activeWorkspace, loading: workspaceLoading } = useWorkspace();
+  const { success, error: toastError } = useToast();
   const [tasks, setTasks] = useState([]);
   const [projects, setProjects] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [errorStatus, setErrorStatus] = useState("");
   const [showCreateModal, setShowCreateModal] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [creating, setCreating] = useState(false);
   const [selectedProject, setSelectedProject] = useState(projectId || "all");
+  
+  // Delete Modal State
+  const [deleteModal, setDeleteModal] = useState({
+    isOpen: false,
+    taskId: null,
+    taskTitle: "",
+  });
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     if (activeWorkspace) {
@@ -64,7 +75,7 @@ export default function Tasks() {
 
     try {
       setLoading(true);
-      setError("");
+      setErrorStatus("");
 
       let allTasks = [];
       
@@ -94,7 +105,7 @@ export default function Tasks() {
       setTasks(allTasks);
     } catch (err) {
       console.error("Error fetching tasks:", err);
-      setError(err.response?.data?.message || "Server error");
+      setErrorStatus(err.response?.data?.message || "Server error");
     } finally {
       setLoading(false);
     }
@@ -111,6 +122,7 @@ export default function Tasks() {
           priority: formData.priority,
         };
         await tasksAPI.update(editingTask.id, updateData);
+        success("Task updated successfully");
       } else {
         // Create new task - POST /api/projects/:projectId/tasks
         const createData = {
@@ -119,13 +131,14 @@ export default function Tasks() {
           priority: formData.priority,
         };
         await tasksAPI.create(formData.projectId, createData);
+        success("Task created successfully");
       }
       setShowCreateModal(false);
       setEditingTask(null);
       await fetchTasks();
     } catch (err) {
       console.error("Error saving task:", err);
-      alert(err.response?.data?.message || "Failed to save task");
+      toastError(err.response?.data?.message || "Failed to save task");
     } finally {
       setCreating(false);
     }
@@ -147,19 +160,28 @@ export default function Tasks() {
       await fetchTasks();
     } catch (err) {
       console.error("Error updating task status:", err);
-      alert(err.response?.data?.message || "Failed to update task status");
+      toastError(err.response?.data?.message || "Failed to update task status");
     }
   };
 
-  const handleDeleteTask = async (taskId, taskTitle) => {
-    if (!window.confirm(`Are you sure you want to delete "${taskTitle}"?`)) return;
+  const handleDeleteTask = (taskId, taskTitle) => {
+    setDeleteModal({ isOpen: true, taskId, taskTitle });
+  };
 
+  const confirmDeleteTask = async () => {
+    if (!deleteModal.taskId) return;
+    
     try {
-      await tasksAPI.delete(taskId);
+      setIsDeleting(true);
+      await tasksAPI.delete(deleteModal.taskId);
+      setDeleteModal({ isOpen: false, taskId: null, taskTitle: "" });
+      success("Task deleted successfully");
       await fetchTasks();
     } catch (err) {
       console.error("Error deleting task:", err);
-      alert(err.response?.data?.message || "Failed to delete task");
+      toastError(err.response?.data?.message || "Failed to delete task");
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -167,9 +189,10 @@ export default function Tasks() {
     try {
       await tasksAPI.restore(taskId);
       await fetchTasks();
+      success("Task restored successfully");
     } catch (err) {
       console.error("Error restoring task:", err);
-      alert(err.response?.data?.message || "Failed to restore task");
+      toastError(err.response?.data?.message || "Failed to restore task");
     }
   };
 
@@ -220,7 +243,7 @@ export default function Tasks() {
       );
     } catch (err) {
       console.error("Error moving task:", err);
-      alert(err.response?.data?.message || "Failed to move task");
+      toastError(err.response?.data?.message || "Failed to move task");
     }
   };
 
@@ -237,6 +260,18 @@ export default function Tasks() {
         onSubmit={handleCreateTask}
         loading={creating}
         task={editingTask}
+      />
+
+      <ConfirmModal
+        isOpen={deleteModal.isOpen}
+        onClose={() => setDeleteModal({ ...deleteModal, isOpen: false })}
+        onConfirm={confirmDeleteTask}
+        title="Delete Task"
+        message={`Are you sure you want to delete "${deleteModal.taskTitle}"? This action cannot be undone.`}
+        confirmText="Delete"
+        cancelText="Cancel"
+        type="danger"
+        loading={isDeleting}
       />
 
       <div className="p-6">
@@ -285,14 +320,14 @@ export default function Tasks() {
         )}
 
         {/* Error State */}
-        {!loading && error && (
+        {!loading && errorStatus && (
           <div className="bg-red-50 border border-red-200 rounded-lg p-6">
-            <p className="text-red-800">{error}</p>
+            <p className="text-red-800">{errorStatus}</p>
           </div>
         )}
 
         {/* Kanban Board */}
-        {!loading && !error && (
+        {!loading && !errorStatus && (
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {STATUS_ORDER.map((status) => (
               <KanbanColumn
@@ -310,7 +345,7 @@ export default function Tasks() {
         )}
 
         {/* Empty State */}
-        {!loading && !error && tasks.filter(t => !t.deletedAt).length === 0 && (
+        {!loading && !errorStatus && tasks.filter(t => !t.deletedAt).length === 0 && (
           <div className="text-center py-16 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
             <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-gray-100 mb-4">
               <FiPlus className="w-8 h-8 text-gray-400" />
@@ -380,19 +415,18 @@ function KanbanColumn({ title, status, tasks, onMove, onDelete, onEdit, canManag
 
 function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
   const priorityColors = {
-    LOW: "bg-green-100 text-green-800",
-    MEDIUM: "bg-yellow-100 text-yellow-800",
-    HIGH: "bg-red-100 text-red-800",
+    LOW: "bg-green-100 text-green-700 border-green-200",
+    MEDIUM: "bg-yellow-100 text-yellow-700 border-yellow-200",
+    HIGH: "bg-red-100 text-red-700 border-red-200",
   };
 
-  // Calculate movement permissions dynamically
+  // Calculate movement permissions
   const currentIndex = STATUS_ORDER.indexOf(task.status);
   const canMoveLeft = currentIndex > 0;
   const canMoveRight = currentIndex < STATUS_ORDER.length - 1;
   const leftStatus = canMoveLeft ? STATUS_ORDER[currentIndex - 1] : null;
   const rightStatus = canMoveRight ? STATUS_ORDER[currentIndex + 1] : null;
 
-  // Generate assignee initials
   const getInitials = (name) => {
     if (!name) return null;
     const parts = name.trim().split(' ');
@@ -401,107 +435,91 @@ function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
   };
 
   const assigneeInitials = task.assignee?.name ? getInitials(task.assignee.name) : null;
-  const projectCreatorInitials = task.project?.createdBy?.name ? getInitials(task.project.createdBy.name) : null;
 
   return (
-    <div className="group relative bg-white rounded-lg border border-gray-200 p-4 hover:shadow-md hover:border-purple-300 transition-all duration-300 ease-in-out min-h-45 flex flex-col justify-between animate-fadeIn">
-      {/* Hover Actions - Top Right */}
-      <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        {canManage && onEdit && (
-          <button
-            onClick={() => onEdit(task)}
-            className="p-1.5 hover:bg-purple-50 rounded transition-colors"
-            title="Edit Task"
-          >
-            <FiEdit2 className="w-4 h-4 text-purple-600" />
-          </button>
-        )}
-        {canManage && (
-          <button
-            onClick={() => onDelete(task.id, task.title)}
-            className="p-1.5 hover:bg-red-50 rounded transition-colors"
-            title="Delete Task"
-          >
-            <FiTrash2 className="w-4 h-4 text-red-600" />
-          </button>
-        )}
-      </div>
-
-      {/* Card Content */}
-      <div className="flex-1">
-        {/* Task Header */}
-        <div className="mb-1 pr-16">
-          <h4 className="font-medium text-gray-900">{task.title}</h4>
-        </div>
-
-        {/* Created By - ALWAYS VISIBLE */}
-        <p className="text-xs text-gray-500 mb-2 min-h-4">
-          by {task.createdBy?.name || "Unknown"}
-        </p>
-
-        {/* Task Description */}
-        <p className="text-sm text-gray-600 mb-3 line-clamp-2 min-h-10">
-          {task.description || ''}
-        </p>
-
-        {/* Task Metadata */}
-        <div className="flex items-center gap-2 flex-wrap">
-          {/* Priority Badge */}
-          <span className={`px-2 py-1 rounded text-xs font-medium ${priorityColors[task.priority]}`}>
-            {task.priority}
-          </span>
-
-          {/* Project Name */}
-          {task.project && (
-            <span className="px-2 py-1 rounded bg-purple-100 text-purple-800 text-xs font-medium">
-              {task.project.name}
-            </span>
+    <div className="group bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-purple-300 transition-all duration-200 flex flex-col overflow-hidden">
+      {/* Top Section: Title & Description */}
+      <div className="p-4 relative">
+        {/* Actions (Absolute Top Right) */}
+        <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 backdrop-blur-sm rounded-lg p-1">
+          {canManage && onEdit && (
+            <button
+              onClick={() => onEdit(task)}
+              className="p-1.5 text-gray-500 hover:bg-purple-50 hover:text-purple-600 rounded transition-colors"
+              title="Edit Task"
+            >
+              <FiEdit2 className="w-3.5 h-3.5" />
+            </button>
+          )}
+          {canManage && (
+            <button
+              onClick={() => onDelete(task.id, task.title)}
+              className="p-1.5 text-gray-500 hover:bg-red-50 hover:text-red-600 rounded transition-colors"
+              title="Delete Task"
+            >
+              <FiTrash2 className="w-3.5 h-3.5" />
+            </button>
           )}
         </div>
+
+        {/* Title */}
+        <h4 className="text-lg font-bold text-gray-900 mb-2 pr-16 leading-tight">
+          {task.title}
+        </h4>
+
+        {/* Description */}
+        {task.description && (
+          <p className="text-sm text-gray-500 line-clamp-3 mb-3 leading-relaxed">
+            {task.description}
+          </p>
+        )}
+
+        {/* Project Tag */}
+        {task.project && (
+           <div className="mb-1">
+             <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
+                {task.project.name}
+             </span>
+           </div>
+        )}
       </div>
 
-      {/* Bottom Section - Assignee, Project Creator, and Move Actions */}
-      <div className="mt-3 space-y-2">
-        {/* Initials Badges */}
-        <div className="flex justify-end gap-2">
-          {/* Assignee Initials */}
+      {/* Footer Section: Metadata & Controls */}
+      <div className="mt-auto px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
+        {/* Left: Priority & Move Left */}
+        <div className="flex items-center gap-3">
+          {canManage && canMoveLeft && (
+            <button 
+              onClick={(e) => { e.stopPropagation(); onMove(task.id, leftStatus); }}
+              className="text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded p-1 transition-all"
+              title="Move Left"
+            >
+              <FiChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+          
+          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${priorityColors[task.priority]}`}>
+            {task.priority}
+          </span>
+        </div>
+
+        {/* Right: Assignee & Move Right */}
+        <div className="flex items-center gap-3">
           {assigneeInitials && (
             <div 
-              className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-semibold transition-transform hover:scale-110"
-              title={`Assigned to ${task.assignee?.name || 'Unknown'}`}
+              className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white"
+              title={`Assigned to ${task.assignee.name}`}
             >
               {assigneeInitials}
             </div>
           )}
           
-          {/* Project Creator Initials */}
-          {projectCreatorInitials && (
-            <div 
-              className="w-8 h-8 rounded-full bg-blue-500 text-white flex items-center justify-center text-xs font-semibold transition-transform hover:scale-110"
-              title={`Project by ${task.project?.createdBy?.name || 'Unknown'}`}
-            >
-              {projectCreatorInitials}
-            </div>
-          )}
-        </div>
-
-        {/* Move Actions - Always reserve space */}
-        <div className="min-h-9 flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          {canManage && canMoveLeft && (
-            <button
-              onClick={() => onMove(task.id, leftStatus)}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium rounded transition-all duration-200 hover:scale-105"
-            >
-              <FiChevronLeft className="w-4 h-4" />
-              Move Left
-            </button>
-          )}
           {canManage && canMoveRight && (
-            <button
-              onClick={() => onMove(task.id, rightStatus)}
-              className="flex-1 flex items-center justify-center gap-1.5 px-3 py-2 bg-purple-100 hover:bg-purple-200 text-purple-700 text-sm font-medium rounded transition-all duration-200 hover:scale-105"
+            <button 
+              onClick={(e) => { e.stopPropagation(); onMove(task.id, rightStatus); }}
+              className="text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded p-1 transition-all"
+              title="Move Right"
             >
-              Move Right
               <FiChevronRight className="w-4 h-4" />
             </button>
           )}

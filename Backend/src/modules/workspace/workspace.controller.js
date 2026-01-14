@@ -199,6 +199,7 @@ exports.inviteUser = async (req, res) => {
     if (!emailResult.success) {
       console.error(`⚠️  User added to workspace but email delivery failed`);
       return res.json({
+        success: true,
         message: "User invited successfully",
         emailSent: false,
         emailError: "Invitation email could not be sent"
@@ -207,6 +208,7 @@ exports.inviteUser = async (req, res) => {
 
     console.log(`✅ User invited and email sent successfully`);
     res.json({
+      success: true,
       message: "User invited successfully",
       emailSent: true
     });

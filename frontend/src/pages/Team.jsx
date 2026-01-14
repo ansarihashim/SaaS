@@ -2,11 +2,13 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
+import { useToast } from "../contexts/ToastContext";
 import { teamAPI, workspaceAPI } from "../services/api";
 import { FiPlus, FiX, FiMail, FiShield, FiUser } from "react-icons/fi";
 
 export default function Team() {
   const { activeWorkspace, loading: workspaceLoading } = useWorkspace();
+  const { success, error: toastError, warning } = useToast();
   const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -51,9 +53,9 @@ export default function Team() {
       
       // Check if email was sent successfully
       if (response.data.emailSent === false) {
-        alert(`✅ User added to workspace\n\n⚠️ Warning: ${response.data.emailError || 'Invitation email could not be sent'}\n\nPlease notify the user manually.`);
+        warning(`User added to workspace, but invitation email could not be sent. Please notify them manually.`);
       } else {
-        alert('✅ User invited successfully! Invitation email sent.');
+        success('User invited successfully!');
       }
       
       // Refresh members if invited to current workspace
@@ -62,7 +64,7 @@ export default function Team() {
       }
     } catch (err) {
       console.error("Error inviting member:", err);
-      alert(err.response?.data?.message || "Failed to invite member");
+      toastError(err.response?.data?.message || "Failed to invite member");
     } finally {
       setInviting(false);
     }
