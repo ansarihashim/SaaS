@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "../layouts/DashboardLayout";
+
 import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { projectsAPI } from "../services/api";
@@ -99,18 +99,18 @@ export default function Projects() {
   // Show workspace loading state
   if (workspaceLoading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <p className="text-gray-500">Loading workspace...</p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   // No active workspace
   if (!activeWorkspace) {
     return (
-      <DashboardLayout>
+      <>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-yellow-800 mb-2">
             No Workspace Selected
@@ -119,7 +119,7 @@ export default function Projects() {
             Please select a workspace to view projects.
           </p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
@@ -127,7 +127,7 @@ export default function Projects() {
   const canCreateProject = activeWorkspace.role === "OWNER" || activeWorkspace.role === "ADMIN";
 
   return (
-    <DashboardLayout>
+    <>
       <Topbar
         title="Projects"
         subtitle="Manage and organize your projects"
@@ -240,6 +240,6 @@ export default function Projects() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }

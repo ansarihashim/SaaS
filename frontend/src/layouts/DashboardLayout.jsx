@@ -1,6 +1,8 @@
-import { useState, createContext, useContext } from "react";
+import { useState, createContext, useContext, useEffect } from "react";
+import { Outlet, useLocation } from "react-router-dom";
 import Sidebar from "../components/Sidebar";
 import EmptyWorkspaceState from "../components/EmptyWorkspaceState";
+import Loader from "../components/Loader";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 
 const SidebarContext = createContext();
@@ -16,6 +18,21 @@ export const useSidebar = () => {
 export default function DashboardLayout({ children }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const { workspaces, loading } = useWorkspace();
+  const location = useLocation();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Transition Effect on Route Change
+  useEffect(() => {
+    // Start transition
+    setIsTransitioning(true);
+
+    // Minimum visual hold time for stability (250ms)
+    const timer = setTimeout(() => {
+      setIsTransitioning(false);
+    }, 250);
+
+    return () => clearTimeout(timer);
+  }, [location.pathname]); // Trigger on path change
 
   const toggleSidebar = () => {
     setSidebarCollapsed(!sidebarCollapsed);
@@ -25,10 +42,7 @@ export default function DashboardLayout({ children }) {
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
-        <div className="text-center">
-          <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600"></div>
-          <p className="mt-4 text-gray-600">Loading workspaces...</p>
-        </div>
+        <Loader />
       </div>
     );
   }
@@ -44,8 +58,16 @@ export default function DashboardLayout({ children }) {
         <Sidebar collapsed={sidebarCollapsed} onToggleCollapse={toggleSidebar} />
 
         <main className="flex-1 p-4 sm:p-6 lg:p-8 transition-all duration-300">
-          <div className="max-w-7xl mx-auto">
-            {children}
+          <div className="max-w-7xl mx-auto h-full">
+            {isTransitioning ? (
+              <div className="h-full flex items-center justify-center min-h-[50vh]">
+                <Loader />
+              </div>
+            ) : (
+               <div className="animate-fadeIn">
+                 {children || <Outlet />}
+               </div>
+            )}
           </div>
         </main>
       </div>

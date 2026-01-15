@@ -45,10 +45,10 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
                 e.stopPropagation();
                 onEdit(project);
               }}
-              className="p-1.5 hover:bg-purple-50 rounded transition-colors"
+              className="p-1.5 hover:bg-purple-50 text-gray-400 hover:text-purple-600 rounded transition-colors"
               title="Edit Project"
             >
-              <FiEdit2 className="w-4 h-4 text-purple-600" />
+              <FiEdit2 className="w-4 h-4" />
             </button>
           )}
           {onDelete && (
@@ -57,10 +57,10 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
                 e.stopPropagation();
                 onDelete(project.id, project.name);
               }}
-              className="p-1.5 hover:bg-red-50 rounded transition-colors"
+              className="p-1.5 hover:bg-red-50 text-gray-400 hover:text-red-600 rounded transition-colors"
               title="Delete Project"
             >
-              <FiTrash2 className="w-4 h-4 text-red-600" />
+              <FiTrash2 className="w-4 h-4" />
             </button>
           )}
         </div>
@@ -68,8 +68,8 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 
       {/* Header */}
       <div className="mb-4">
-        <h3 className="text-xl font-bold text-gray-900 mb-2 pr-16">{name}</h3>
-        <p className="text-sm text-gray-600 line-clamp-2">
+        <h3 className="text-xl font-bold text-gray-900 group-hover:text-purple-700 transition-colors mb-2 pr-16">{name}</h3>
+        <p className="text-sm text-gray-500 line-clamp-2 leading-relaxed">
           {description || "No description"}
         </p>
       </div>
@@ -106,7 +106,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        <div className="flex items-center text-xs text-gray-500">
+        <div className="flex items-center text-xs text-gray-500 font-medium">
           <FiCalendar className="w-4 h-4 mr-1.5" />
           {formatCreatedAt(createdAt)}
         </div>
@@ -114,7 +114,7 @@ export default function ProjectCard({ project, onEdit, onDelete }) {
         {/* Creator Initials Badge */}
         {creatorInitials && (
           <div 
-            className="w-8 h-8 rounded-full bg-purple-500 text-white flex items-center justify-center text-xs font-semibold transition-transform hover:scale-110"
+            className="w-8 h-8 rounded-full bg-gray-100 text-gray-600 border border-white ring-2 ring-gray-50 flex items-center justify-center text-xs font-bold transition-transform group-hover:bg-purple-100 group-hover:text-purple-700 group-hover:ring-purple-50"
             title={`Created by ${createdBy?.name || 'Unknown'}`}
           >
             {creatorInitials}

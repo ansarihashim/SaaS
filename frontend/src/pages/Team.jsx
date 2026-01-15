@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "../layouts/DashboardLayout";
+
 import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { useToast } from "../contexts/ToastContext";
@@ -72,17 +72,17 @@ export default function Team() {
 
   if (workspaceLoading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <p className="text-gray-500">Loading workspace...</p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!activeWorkspace) {
     return (
-      <DashboardLayout>
+      <>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-yellow-800 mb-2">
             No Workspace Selected
@@ -91,7 +91,7 @@ export default function Team() {
             Please select a workspace to view team members.
           </p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
@@ -99,7 +99,7 @@ export default function Team() {
   const canInvite = activeWorkspace.role === "OWNER" || activeWorkspace.role === "ADMIN";
 
   return (
-    <DashboardLayout>
+    <>
       <Topbar
         title="Team Members"
         subtitle={`Manage team in ${activeWorkspace.name}`}
@@ -196,7 +196,7 @@ export default function Team() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }
 

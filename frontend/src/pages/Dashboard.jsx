@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import DashboardLayout from "../layouts/DashboardLayout";
 import Topbar from "../components/Topbar";
 import StatCard from "../components/StatCard";
 import ActiveTasksCard from "../components/ActiveTasksCard";
@@ -57,53 +56,53 @@ export default function Dashboard() {
   // Show workspace loading state
   if (workspaceLoading) {
     return (
-      <DashboardLayout>
+      <>
         <p className="text-gray-500">Loading workspace...</p>
-      </DashboardLayout>
+      </>
     );
   }
 
   // Show workspace error
   if (workspaceError) {
     return (
-      <DashboardLayout>
+      <>
         <p className="text-red-500">Error: {workspaceError}</p>
-      </DashboardLayout>
+      </>
     );
   }
 
   // No active workspace available
   if (!activeWorkspace) {
     return (
-      <DashboardLayout>
+      <>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-yellow-800 mb-2">No Workspace Available</h3>
           <p className="text-yellow-700">You don't have access to any workspaces yet. Please create one or ask to be invited.</p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (loading) {
     return (
-      <DashboardLayout>
+      <>
         <p className="text-gray-500">Loading dashboard...</p>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (error) {
     return (
-      <DashboardLayout>
+      <>
         <div className="bg-red-50 border border-red-200 rounded-lg p-6">
           <p className="text-red-600">{error}</p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   return (
-    <DashboardLayout>
+    <>
       <Topbar
         title="Dashboard"
         subtitle={`Welcome back, ${user?.name || user?.email || 'there'}.`}
@@ -164,6 +163,6 @@ export default function Dashboard() {
         <ActiveTasksCard workspaceId={activeWorkspace.id} />
         <RecentActivityCard workspaceId={activeWorkspace.id} />
       </div>
-    </DashboardLayout>
+    </>
   );
 }

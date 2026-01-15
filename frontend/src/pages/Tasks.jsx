@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
-import DashboardLayout from "../layouts/DashboardLayout";
+
 import Topbar from "../components/Topbar";
 import { useWorkspace } from "../contexts/WorkspaceContext";
 import { useToast } from "../contexts/ToastContext";
@@ -24,6 +24,7 @@ export default function Tasks() {
   const [editingTask, setEditingTask] = useState(null);
   const [creating, setCreating] = useState(false);
   const [selectedProject, setSelectedProject] = useState(projectId || "all");
+  const [isFiltering, setIsFiltering] = useState(false);
   
   // Delete Modal State
   const [deleteModal, setDeleteModal] = useState({
@@ -74,7 +75,11 @@ export default function Tasks() {
     }
 
     try {
-      setLoading(true);
+      if (tasks.length === 0) {
+        setLoading(true);
+      } else {
+        setIsFiltering(true);
+      }
       setErrorStatus("");
 
       let allTasks = [];
@@ -103,9 +108,17 @@ export default function Tasks() {
       }
 
       setTasks(allTasks);
+
+      // Smooth transition out
+      if (tasks.length > 0) {
+        setTimeout(() => setIsFiltering(false), 200);
+      } else {
+        setIsFiltering(false);
+      }
     } catch (err) {
       console.error("Error fetching tasks:", err);
       setErrorStatus(err.response?.data?.message || "Server error");
+      setIsFiltering(false);
     } finally {
       setLoading(false);
     }
@@ -198,17 +211,17 @@ export default function Tasks() {
 
   if (workspaceLoading) {
     return (
-      <DashboardLayout>
+      <>
         <div className="flex items-center justify-center h-64">
           <p className="text-gray-500">Loading workspace...</p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
   if (!activeWorkspace) {
     return (
-      <DashboardLayout>
+      <>
         <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6">
           <h3 className="text-lg font-semibold text-yellow-800 mb-2">
             No Workspace Selected
@@ -217,7 +230,7 @@ export default function Tasks() {
             Please select a workspace to view tasks.
           </p>
         </div>
-      </DashboardLayout>
+      </>
     );
   }
 
@@ -248,7 +261,7 @@ export default function Tasks() {
   };
 
   return (
-    <DashboardLayout>
+    <>
       <Topbar
         title="Tasks"
         subtitle={`Manage tasks in ${activeWorkspace.name}`}
@@ -289,13 +302,19 @@ export default function Tasks() {
         {/* Filter Bar */}
         <div className="mb-6">
           <div className="flex items-center gap-2">
-            <label htmlFor="projectFilter" className="text-sm font-medium text-gray-700">
+            <label htmlFor="projectFilter" className="text-sm font-medium text-gray-700 flex items-center gap-2">
               Filter by Project:
+              {isFiltering && (
+                <div className="w-3 h-3 rounded-full border-2 border-purple-600 border-t-transparent animate-spin" />
+              )}
             </label>
             <select
               id="projectFilter"
               value={selectedProject}
-              onChange={(e) => setSelectedProject(e.target.value)}
+              onChange={(e) => {
+                setIsFiltering(true);
+                setSelectedProject(e.target.value);
+              }}
               className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-purple-500 focus:border-transparent bg-white"
             >
               <option value="all">All Projects</option>
@@ -327,7 +346,11 @@ export default function Tasks() {
 
         {/* Kanban Board */}
         {!loading && !errorStatus && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div 
+             className={`grid grid-cols-1 md:grid-cols-3 gap-6 transition-opacity duration-200 ease-out ${
+               isFiltering ? "opacity-60 pointer-events-none grayscale-[0.3]" : "opacity-100"
+             }`}
+          >
             {STATUS_ORDER.map((status) => (
               <KanbanColumn
                 key={status}
@@ -368,7 +391,7 @@ export default function Tasks() {
           </div>
         )}
       </div>
-    </DashboardLayout>
+    </>
   );
 }
 

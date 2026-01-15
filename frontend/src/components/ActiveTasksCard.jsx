@@ -197,7 +197,7 @@ export default function ActiveTasksCard({ workspaceId }) {
               {/* Assignee Avatar */}
               {task.assignee && (
                 <div
-                  className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center text-xs font-semibold"
+                  className="w-8 h-8 rounded-full bg-purple-100 text-purple-700 flex items-center justify-center text-xs font-bold"
                   title={task.assignee.name}
                 >
                   {getInitials(task.assignee.name)}

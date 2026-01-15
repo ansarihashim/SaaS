@@ -122,21 +122,20 @@ export default function RecentActivityCard({ workspaceId }) {
             return (
               <div
                 key={log.id}
-                className="flex items-start gap-3 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors"
+                className="flex items-start gap-4 py-3 px-3 rounded-lg hover:bg-gray-50 transition-colors group"
               >
                 {/* Activity Icon */}
-                <div className="shrink-0 w-10 h-10 rounded-full bg-purple-50 flex items-center justify-center">
-                  {getActivityIcon()}
+                <div className="shrink-0 w-8 h-8 rounded-full bg-purple-50 flex items-center justify-center group-hover:bg-purple-100 transition-colors">
+                  <FiActivity className="w-4 h-4 text-purple-600" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="leading-relaxed">
-                    <span className="text-lg font-semibold text-gray-900">{userName}</span>
-                    <span className="text-gray-400 mx-2">·</span>
-                    <span className="text-base text-gray-700">{message}</span>
+                  <p className="leading-relaxed text-sm">
+                    <span className="font-semibold text-gray-900">{userName}</span>
+                    <span className="text-gray-600 mx-1.5">{message}</span>
                   </p>
-                  <p className="text-sm text-gray-500 mt-1">
+                  <p className="text-xs text-gray-400 mt-1 font-medium">
                     {formatTimeAgo(log.createdAt)}
                   </p>
                 </div>

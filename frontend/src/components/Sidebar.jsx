@@ -5,7 +5,7 @@ import { useState } from "react";
 import { MdDashboard, MdFolder, MdChecklist, MdTimeline, MdGroup, MdLogout, MdChevronLeft, MdChevronRight } from "react-icons/md";
 
 const navItems = [
-  { name: "Dashboard", path: "/", icon: MdDashboard },
+  { name: "Dashboard", path: "/dashboard", icon: MdDashboard },
   { name: "Projects", path: "/projects", icon: MdFolder },
   { name: "Tasks", path: "/tasks", icon: MdChecklist },
   { name: "Activity", path: "/activity", icon: MdTimeline },
@@ -109,7 +109,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
       <nav className="space-y-1 px-3 flex-1 overflow-y-auto">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isDisabled = !activeWorkspace && item.path !== '/';
+          const isDisabled = !activeWorkspace && item.path !== '/dashboard';
           
           if (isDisabled) {
             return (
@@ -133,14 +133,20 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
               className={({ isActive }) =>
                 `flex items-center gap-3 px-3 py-2.5 rounded-lg transition-all duration-200 group relative ${
                   isActive
-                    ? "bg-purple-50 text-purple-600 font-semibold"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900 font-medium"
+                    ? "bg-purple-50 text-purple-700 font-semibold"
+                    : "text-gray-600 hover:bg-purple-50/50 hover:text-purple-700 font-medium"
                 } ${collapsed ? 'justify-center' : ''}`
               }
               title={collapsed ? item.name : ''}
             >
-              <Icon className="w-5 h-5 shrink-0" />
-              {!collapsed && <span className="text-sm truncate">{item.name}</span>}
+              {({ isActive }) => (
+                <>
+                  <Icon className={`w-5 h-5 shrink-0 transition-colors ${
+                    isActive ? "text-purple-700" : "text-gray-400 group-hover:text-purple-600"
+                  }`} />
+                  {!collapsed && <span className="text-sm truncate">{item.name}</span>}
+                </>
+              )}
             </NavLink>
           );
         })}
@@ -150,8 +156,8 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
       <div className={`mt-auto pt-4 border-t border-gray-100 ${collapsed ? 'px-2' : 'px-4'}`}>
         {!collapsed ? (
           <div className="space-y-1">
-            <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-gray-50 transition-colors cursor-default">
-              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center font-semibold text-white text-xs shrink-0">
+            <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-purple-50 transition-colors cursor-default">
+              <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-semibold text-white text-xs shrink-0">
                 {user?.name?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="flex-1 min-w-0">
@@ -169,7 +175,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
           </div>
         ) : (
           <div className="flex flex-col items-center gap-4">
-            <div className="w-8 h-8 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 flex items-center justify-center font-semibold text-white text-xs" title={user?.name}>
+            <div className="w-8 h-8 rounded-full bg-purple-600 flex items-center justify-center font-semibold text-white text-xs" title={user?.name}>
               {user?.name?.charAt(0).toUpperCase() || 'U'}
             </div>
             <button
