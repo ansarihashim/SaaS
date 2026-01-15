@@ -2,13 +2,13 @@ import { motion } from "framer-motion";
 
 export default function DashboardPreview() {
   return (
-    <section className="py-24 bg-gray-950 relative overflow-hidden">
+    <section className="py-24 bg-transparent relative overflow-hidden">
        {/* Background Glow */}
-       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/20 rounded-full blur-[120px]" />
+       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/10 rounded-full blur-[120px]" />
 
        <div className="max-w-7xl mx-auto px-6 relative z-10">
          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-4">
+            <h2 className="text-3xl md:text-5xl font-extrabold text-gray-100 mb-4">
                Command Center
             </h2>
             <p className="text-gray-400">

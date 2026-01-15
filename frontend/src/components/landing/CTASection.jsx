@@ -3,9 +3,9 @@ import { FiArrowRight } from "react-icons/fi";
 
 export default function CTASection() {
   return (
-    <section className="py-32 bg-gray-950 border-t border-gray-900">
+    <section className="py-32 bg-transparent">
       <div className="max-w-4xl mx-auto px-6 text-center">
-        <h2 className="text-5xl md:text-6xl font-black text-white mb-8 tracking-tight">
+        <h2 className="text-5xl md:text-6xl font-black text-gray-100 mb-8 tracking-tight">
           Ready to <span className="text-purple-600">Level Up?</span>
         </h2>
         <p className="text-xl text-gray-400 mb-10 max-w-2xl mx-auto">

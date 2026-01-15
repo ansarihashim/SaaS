@@ -3,6 +3,7 @@ import { useWorkspace } from "../contexts/WorkspaceContext";
 import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import { MdDashboard, MdFolder, MdChecklist, MdTimeline, MdGroup, MdLogout, MdChevronLeft, MdChevronRight } from "react-icons/md";
+import logo from "../assets/logo.png";
 
 const navItems = [
   { name: "Dashboard", path: "/dashboard", icon: MdDashboard },
@@ -27,9 +28,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
       <div className={`flex items-center ${collapsed ? 'flex-col gap-4 justify-center' : 'justify-between px-4'} mb-8 transition-all duration-300`}>
         {/* Logo & Title */}
         <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
-          <div className="w-8 h-8 rounded-lg bg-purple-600 flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-lg">T</span>
-          </div>
+          <img src={logo} alt="TaskFlow" className="w-8 h-8 shrink-0 object-contain" />
           {!collapsed && (
             <h1 className="text-xl font-extrabold text-gray-900 truncate">
               TaskFlow

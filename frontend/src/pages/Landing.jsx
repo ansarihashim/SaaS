@@ -4,18 +4,20 @@ import DashboardPreview from "../components/landing/DashboardPreview";
 import WorkflowSection from "../components/landing/WorkflowSection";
 import CTASection from "../components/landing/CTASection";
 import LandingFooter from "../components/landing/LandingFooter";
-import CursorGlow from "../components/landing/CursorGlow";
+import LuxuryBackground from "../components/landing/LuxuryBackground";
 
 export default function Landing() {
   return (
-    <div className="bg-gray-950 min-h-screen text-gray-100 font-sans selection:bg-purple-500 selection:text-white">
-      <CursorGlow />
-      <HeroSection />
-      <FeatureGrid />
-      <WorkflowSection />
-      <DashboardPreview />
-      <CTASection />
-      <LandingFooter />
+    <div className="min-h-screen text-gray-200 font-sans selection:bg-purple-500/30 selection:text-white relative">
+      <LuxuryBackground />
+      <div className="relative z-10 text-gray-300/90">
+        <HeroSection />
+        <FeatureGrid />
+        <WorkflowSection />
+        <DashboardPreview />
+        <CTASection />
+        <LandingFooter />
+      </div>
     </div>
   );
 }

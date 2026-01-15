@@ -1,25 +1,16 @@
-import { motion } from "framer-motion";
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
+import QuoteCarousel from "./QuoteCarousel";
 
 export default function HeroSection() {
   return (
-    <section className="relative min-h-screen flex items-center bg-gray-950 overflow-hidden">
-      {/* Background Gradients */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-purple-900/20 via-gray-950 to-gray-950" />
+    <section className="relative min-h-screen flex items-center overflow-hidden">
       
       <div className="max-w-7xl mx-auto px-6 relative z-10 w-full grid lg:grid-cols-2 gap-12 items-center">
-        <motion.div
-          initial={{ opacity: 0, x: -50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
-        >
-          <div className="inline-block px-4 py-1.5 rounded-full bg-purple-900/30 border border-purple-500/30 text-purple-300 text-sm font-semibold mb-6">
-            v2.0 is now live
-          </div>
-          <h1 className="text-5xl md:text-7xl font-extrabold text-white leading-tight mb-6 tracking-tight">
+        <div>
+          <h1 className="text-5xl md:text-7xl font-extrabold text-gray-100 leading-tight mb-6 tracking-tight">
             Manage Projects <br />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-pink-600">
+            <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-purple-300">
               Like a Boss
             </span>
           </h1>
@@ -41,32 +32,10 @@ export default function HeroSection() {
               Login
             </Link>
           </div>
-        </motion.div>
+        </div>
 
-        {/* Abstract Visual */}
-        <motion.div
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
-          className="relative hidden lg:block"
-        >
-          <div className="absolute inset-0 bg-gradient-to-tr from-purple-600 to-pink-600 rounded-2xl blur-3xl opacity-20 animate-pulse" />
-          <div className="relative bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-2xl skew-y-3 hover:skew-y-0 transition-transform duration-500">
-            <div className="flex items-center gap-4 mb-6">
-               <div className="w-3 h-3 rounded-full bg-red-500" />
-               <div className="w-3 h-3 rounded-full bg-yellow-500" />
-               <div className="w-3 h-3 rounded-full bg-green-500" />
-            </div>
-            <div className="space-y-4">
-               <div className="h-8 bg-gray-800 rounded w-3/4 animate-pulse" />
-               <div className="h-32 bg-gray-800/50 rounded w-full border border-gray-700/50" />
-               <div className="flex gap-4">
-                 <div className="h-20 bg-purple-900/20 rounded w-1/2 border border-purple-500/20" />
-                 <div className="h-20 bg-gray-800/50 rounded w-1/2" />
-               </div>
-            </div>
-          </div>
-        </motion.div>
+        {/* Abstract Visual Replacement -> Quote Carousel */}
+        <QuoteCarousel />
       </div>
     </section>
   );

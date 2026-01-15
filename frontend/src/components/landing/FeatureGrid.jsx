@@ -12,10 +12,10 @@ const features = [
 
 export default function FeatureGrid() {
   return (
-    <section className="py-24 bg-gray-950">
+    <section className="py-24 bg-transparent">
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-16 text-center max-w-2xl mx-auto">
-          <h2 className="text-3xl md:text-5xl font-extrabold text-white mb-6">
+          <h2 className="text-3xl md:text-5xl font-extrabold text-gray-100 mb-6">
             Built for the <span className="text-purple-500">Ambitious</span>
           </h2>
           <p className="text-gray-400 text-lg">

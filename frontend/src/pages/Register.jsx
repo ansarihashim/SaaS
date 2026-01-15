@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import PasswordInput from '../components/PasswordInput';
+import logo from '../assets/logo.png';
 
 export default function Register() {
   const [formData, setFormData] = useState({
@@ -80,8 +81,8 @@ export default function Register() {
       <div className="max-w-md w-full">
         {/* Logo/Brand */}
         <div className="text-center mb-8">
-          <Link to="/" className="inline-flex items-center justify-center w-12 h-12 rounded-xl bg-purple-600 text-white text-xl font-bold mb-4 shadow-sm hover:bg-purple-700 transition-colors">
-            T
+          <Link to="/" className="inline-block mb-4">
+            <img src={logo} alt="TaskFlow" className="w-16 h-16 object-contain mx-auto" />
           </Link>
           <h1 className="text-2xl font-bold text-gray-900">Create Account</h1>
           <p className="text-gray-500 mt-2 text-sm">Start managing your projects today</p>
