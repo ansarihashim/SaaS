@@ -1,5 +1,6 @@
 import FeatureCard from "./FeatureCard";
 import { FiLayout, FiUsers, FiActivity, FiShield, FiZap, FiCommand } from "react-icons/fi";
+import { motion } from "framer-motion";
 
 const features = [
   { icon: FiLayout, title: "Kanban Boards", description: "Visualize work with powerful, intuitive boards that keep your team moving forward." },
@@ -12,7 +13,9 @@ const features = [
 
 export default function FeatureGrid() {
   return (
-    <section className="py-24 bg-transparent">
+    <motion.section 
+      className="py-24 bg-transparent"
+    >
       <div className="max-w-7xl mx-auto px-6">
         <div className="mb-16 text-center max-w-2xl mx-auto">
           <h2 className="text-3xl md:text-5xl font-extrabold text-gray-100 mb-6">
@@ -24,10 +27,10 @@ export default function FeatureGrid() {
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {features.map((feature, index) => (
-            <FeatureCard key={index} {...feature} delay={index * 0.1} />
+            <FeatureCard key={index} {...feature} />
           ))}
         </div>
       </div>
-    </section>
+    </motion.section>
   );
 }
