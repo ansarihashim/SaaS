@@ -1,5 +1,5 @@
 import { motion } from "framer-motion";
-import { FiCheck, FiX, FiZap, FiAlertCircle, FiClock, FiTrendingUp, FiHelpCircle } from "react-icons/fi";
+import { FiCheck, FiX, FiZap, FiAlertCircle, FiClock, FiTrendingUp, FiHelpCircle, FiTarget, FiUserCheck } from "react-icons/fi";
 import Stack from "./Stack";
 
 const steps = [
@@ -11,15 +11,15 @@ const steps = [
 const cards = [
   // --- BOTTOM OF STACK (Last to be seen) ---
   
-  // Solution 3: Scale
+  // Solution 3: Accountability (User requested)
   <div className="w-full h-full bg-gradient-to-br from-indigo-900/90 to-gray-900 border border-indigo-500/30 rounded-2xl p-6 flex flex-col justify-center items-center text-center shadow-2xl select-none relative overflow-hidden">
      <div className="absolute inset-0 bg-indigo-500/10"></div>
      <div className="w-16 h-16 bg-indigo-600 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(79,70,229,0.4)]">
-       <FiTrendingUp className="text-white text-3xl" />
+       <FiUserCheck className="text-white text-3xl" />
      </div>
-     <h3 className="text-xl font-bold text-white mb-2">Infinite Scale</h3>
+     <h3 className="text-xl font-bold text-white mb-2">Built-in Accountability</h3>
      <p className="text-indigo-200/80 leading-relaxed font-medium">
-       Grow without breaking.<br/>The platform scales with you.
+       Clear ownership trails.<br/>Know exactly who is doing what.
      </p>
   </div>,
 
@@ -34,15 +34,15 @@ const cards = [
      </p>
   </div>,
 
-  // Solution 2: Automation
+  // Solution 2: Deadlines (User requested)
   <div className="w-full h-full bg-gradient-to-br from-purple-900/90 to-gray-900 border border-purple-500/30 rounded-2xl p-6 flex flex-col justify-center items-center text-center shadow-2xl select-none relative overflow-hidden">
      <div className="absolute inset-0 bg-purple-500/10"></div>
      <div className="w-16 h-16 bg-purple-600 rounded-2xl flex items-center justify-center mb-6 shadow-[0_0_20px_rgba(147,51,234,0.4)]">
-       <FiZap className="text-white text-3xl" />
+       <FiTarget className="text-white text-3xl" />
      </div>
-     <h3 className="text-xl font-bold text-white mb-2">Automated Flows</h3>
+     <h3 className="text-xl font-bold text-white mb-2">Never Miss a Beat</h3>
      <p className="text-purple-200/80 leading-relaxed font-medium">
-       Stop chasing updates.<br/>The system does the heavy lifting.
+       Smart scheduling and automated<br/>nudges help you hit every deadline.
      </p>
   </div>,
 
@@ -86,7 +86,13 @@ const cards = [
 export default function WorkflowSection() {
   return (
     <section className="py-24 bg-transparent text-gray-300">
-      <div className="max-w-7xl mx-auto px-6">
+      <motion.div 
+        initial={{ opacity: 0, filter: "brightness(0.4)" }}
+        whileInView={{ opacity: 1, filter: "brightness(1)" }}
+        viewport={{ once: true, amount: 0.3 }}
+        transition={{ duration: 2, ease: "easeOut" }}
+        className="max-w-7xl mx-auto px-6"
+      >
         <div className="grid md:grid-cols-2 gap-16 items-center">
           <div>
             <h2 className="text-4xl font-extrabold mb-12 text-gray-100">
@@ -95,11 +101,8 @@ export default function WorkflowSection() {
             </h2>
             <div className="space-y-8">
               {steps.map((step) => (
-                <motion.div
+                <div
                   key={step.id}
-                  initial={{ opacity: 0, x: -20 }}
-                  whileInView={{ opacity: 1, x: 0 }}
-                  viewport={{ once: true }}
                   className="flex items-start gap-6 group cursor-default"
                 >
                   <span className="text-5xl font-black text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
@@ -111,7 +114,7 @@ export default function WorkflowSection() {
                     </h3>
                     <p className="text-gray-500">{step.description}</p>
                   </div>
-                </motion.div>
+                </div>
               ))}
             </div>
           </div>
@@ -130,7 +133,7 @@ export default function WorkflowSection() {
              </div>
           </div>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

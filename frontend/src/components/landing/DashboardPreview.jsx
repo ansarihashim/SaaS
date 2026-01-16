@@ -6,7 +6,13 @@ export default function DashboardPreview() {
        {/* Background Glow */}
        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-purple-900/10 rounded-full blur-[120px]" />
 
-       <div className="max-w-7xl mx-auto px-6 relative z-10">
+       <motion.div 
+         initial={{ opacity: 0, filter: 'brightness(0.4)' }}
+         whileInView={{ opacity: 1, filter: 'brightness(1)' }}
+         transition={{ duration: 2, ease: 'easeOut' }}
+         viewport={{ once: true, amount: 0.3 }}
+         className="max-w-7xl mx-auto px-6 relative z-10"
+       >
          <div className="text-center mb-16">
             <h2 className="text-3xl md:text-5xl font-extrabold text-gray-100 mb-4">
                Command Center
@@ -16,13 +22,8 @@ export default function DashboardPreview() {
             </p>
          </div>
 
-         <motion.div
-           initial={{ opacity: 0, y: 50, rotateX: 20 }}
-           whileInView={{ opacity: 1, y: 0, rotateX: 0 }}
-           transition={{ duration: 1 }}
-           viewport={{ once: true }}
+         <div
            className="relative mx-auto max-w-5xl"
-           style={{ perspective: "1000px" }}
          >
             <div className="rounded-xl bg-gray-900 border border-gray-800 p-2 shadow-2xl">
               {/* Abstract Representation of Dashboard */}
@@ -37,8 +38,8 @@ export default function DashboardPreview() {
                   <div className="absolute inset-0 bg-purple-900/10 opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
             </div>
-         </motion.div>
-       </div>
+         </div>
+       </motion.div>
     </section>
   );
 }

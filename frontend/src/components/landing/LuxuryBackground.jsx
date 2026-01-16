@@ -28,8 +28,8 @@ export default function LuxuryBackground() {
         stars.push({
           x: Math.random() * width,
           y: Math.random() * height,
-          size: Math.random() * 2 + 1, // 1px to 3px
-          opacity: Math.random() * 0.08 + 0.12, // 0.12 to 0.20 opacity (more visible)
+          size: Math.random() * 2.5 + 1, // 1px to 3.5px
+          opacity: Math.random() * 0.5 + 0.3, // 0.3 to 0.8 opacity (significantly more visible)
           speed: Math.random() * 0.05 + 0.02 // Subtle drift
         });
       }

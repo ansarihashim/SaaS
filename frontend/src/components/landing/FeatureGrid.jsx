@@ -14,6 +14,10 @@ const features = [
 export default function FeatureGrid() {
   return (
     <motion.section 
+      initial={{ opacity: 0, filter: 'brightness(0.4)' }}
+      whileInView={{ opacity: 1, filter: 'brightness(1)' }}
+      transition={{ duration: 2, ease: 'easeOut' }}
+      viewport={{ once: true, amount: 0.3 }}
       className="py-24 bg-transparent"
     >
       <div className="max-w-7xl mx-auto px-6">

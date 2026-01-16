@@ -1,10 +1,17 @@
 import { Link } from "react-router-dom";
 import { FiArrowRight } from "react-icons/fi";
+import { motion } from "framer-motion";
 
 export default function CTASection() {
   return (
     <section className="py-32 bg-transparent">
-      <div className="max-w-4xl mx-auto px-6 text-center">
+      <motion.div 
+        initial={{ opacity: 0, filter: 'brightness(0.4)' }}
+        whileInView={{ opacity: 1, filter: 'brightness(1)' }}
+        transition={{ duration: 2, ease: 'easeOut' }}
+        viewport={{ once: true, amount: 0.3 }}
+        className="max-w-4xl mx-auto px-6 text-center"
+      >
         <h2 className="text-5xl md:text-6xl font-black text-gray-100 mb-8 tracking-tight">
           Ready to <span className="text-purple-600">Level Up?</span>
         </h2>
@@ -17,7 +24,7 @@ export default function CTASection() {
         >
           Start For Free <FiArrowRight />
         </Link>
-      </div>
+      </motion.div>
     </section>
   );
 }
