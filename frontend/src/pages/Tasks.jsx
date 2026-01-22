@@ -7,7 +7,7 @@ import { useToast } from "../contexts/ToastContext";
 import { tasksAPI, projectsAPI } from "../services/api";
 import CreateTaskModal from "../components/modals/CreateTaskModal";
 import ConfirmModal from "../components/modals/ConfirmModal";
-import { FiPlus, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight } from "react-icons/fi";
+import { FiPlus, FiEdit2, FiTrash2, FiChevronLeft, FiChevronRight, FiClock, FiCheckCircle } from "react-icons/fi";
 
 // Single source of truth for status order
 const STATUS_ORDER = ["TODO", "IN_PROGRESS", "DONE"];
@@ -436,11 +436,38 @@ function KanbanColumn({ title, status, tasks, onMove, onDelete, onEdit, canManag
 }
 
 function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
+  console.log("TASK CARD DEBUG:", {
+    id: task.id,
+    status: task.status,
+    deadline: task.deadline,
+    completedAt: task.completedAt,
+    deadlineType: typeof task.deadline
+  });
+
   const priorityColors = {
     LOW: "bg-green-100 text-green-700 border-green-200",
     MEDIUM: "bg-yellow-100 text-yellow-700 border-yellow-200",
     HIGH: "bg-red-100 text-red-700 border-red-200",
   };
+
+  // REQUIRED LOGIC for Date Display
+  const isDone = task.status === "DONE";
+  const hasDeadline = task.deadline && !isNaN(new Date(task.deadline).getTime());
+  
+  const label = isDone 
+    ? "Completed on" 
+    : hasDeadline 
+    ? "Deadline" 
+    : null;
+    
+  const dateValue = isDone 
+    ? task.completedAt 
+    : hasDeadline 
+    ? task.deadline 
+    : null;
+
+  // Overdue check for styling only
+  const isOverdue = hasDeadline && !isDone && new Date(task.deadline) < new Date();
 
   // Calculate movement permissions
   const currentIndex = STATUS_ORDER.indexOf(task.status);
@@ -459,11 +486,11 @@ function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
   const assigneeInitials = task.assignee?.name ? getInitials(task.assignee.name) : null;
 
   return (
-    <div className="group bg-white rounded-xl border border-gray-200 hover:shadow-lg hover:border-purple-300 transition-all duration-200 flex flex-col overflow-hidden">
+    <div className={`group bg-white rounded-xl border transition-all duration-200 flex flex-col overflow-hidden ${isOverdue ? 'border-red-500 shadow-md shadow-red-100' : 'border-gray-200 hover:shadow-lg hover:border-purple-300'}`}>
       {/* Top Section: Title & Description */}
-      <div className="p-4 relative">
+      <div className="p-4 pb-2 relative">
         {/* Actions (Absolute Top Right) */}
-        <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 backdrop-blur-sm rounded-lg p-1">
+        <div className="absolute top-3 right-3 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200 bg-white/80 backdrop-blur-sm rounded-lg p-1 z-10">
           {canManage && onEdit && (
             <button
               onClick={() => onEdit(task)}
@@ -485,7 +512,7 @@ function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
         </div>
 
         {/* Title */}
-        <h4 className="text-lg font-bold text-gray-900 mb-2 pr-16 leading-tight">
+        <h4 className="text-lg font-bold text-gray-900 mb-2 pr-16 leading-tight flex items-center gap-2">
           {task.title}
         </h4>
 
@@ -498,7 +525,7 @@ function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
 
         {/* Project Tag */}
         {task.project && (
-           <div className="mb-1">
+           <div className="mb-2">
              <span className="text-[10px] uppercase tracking-wider text-gray-400 font-semibold">
                 {task.project.name}
              </span>
@@ -506,45 +533,68 @@ function TaskCard({ task, onMove, onDelete, onEdit, canManage }) {
         )}
       </div>
 
-      {/* Footer Section: Metadata & Controls */}
-      <div className="mt-auto px-4 py-3 bg-gray-50 border-t border-gray-100 flex items-center justify-between">
-        {/* Left: Priority & Move Left */}
-        <div className="flex items-center gap-3">
-          {canManage && canMoveLeft && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onMove(task.id, leftStatus); }}
-              className="text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded p-1 transition-all"
-              title="Move Left"
-            >
-              <FiChevronLeft className="w-4 h-4" />
-            </button>
-          )}
-          
-          <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${priorityColors[task.priority]}`}>
-            {task.priority}
-          </span>
-        </div>
+      {/* Footer Section: Date Label & Metadata */}
+      <div className="mt-auto px-4 py-3 bg-gray-50 border-t border-gray-200">
+        
+        {/* Date Label (New Implementation) */}
+        {label && dateValue && (
+          <div className={`flex items-center gap-2 text-xs font-semibold px-2.5 py-1.5 rounded-md border w-fit mb-3 ${
+            isDone 
+              ? "text-green-700 bg-green-50 border-green-200" 
+              : isOverdue 
+              ? "text-red-700 bg-red-50 border-red-200" 
+              : "text-gray-700 bg-gray-100 border-gray-200"
+          }`}>
+            {isDone ? <FiCheckCircle className="w-3.5 h-3.5" /> : <FiClock className="w-3.5 h-3.5" />}
+            <span>
+              {label}: {new Date(dateValue).toLocaleDateString("en-IN", {
+                day: "2-digit",
+                month: "short",
+                year: "numeric",
+              })}
+            </span>
+          </div>
+        )}
 
-        {/* Right: Assignee & Move Right */}
-        <div className="flex items-center gap-3">
-          {assigneeInitials && (
-            <div 
-              className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white"
-              title={`Assigned to ${task.assignee.name}`}
-            >
-              {assigneeInitials}
-            </div>
-          )}
-          
-          {canManage && canMoveRight && (
-            <button 
-              onClick={(e) => { e.stopPropagation(); onMove(task.id, rightStatus); }}
-              className="text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded p-1 transition-all"
-              title="Move Right"
-            >
-              <FiChevronRight className="w-4 h-4" />
-            </button>
-          )}
+        <div className="flex items-center justify-between">
+          {/* Left: Priority & Move Left */}
+          <div className="flex items-center gap-3">
+            {canManage && canMoveLeft && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onMove(task.id, leftStatus); }}
+                className="text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded p-1 transition-all"
+                title="Move Left"
+              >
+                <FiChevronLeft className="w-4 h-4" />
+              </button>
+            )}
+            
+            <span className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold border ${priorityColors[task.priority]}`}>
+              {task.priority}
+            </span>
+          </div>
+
+          {/* Right: Assignee & Move Right */}
+          <div className="flex items-center gap-3">
+            {assigneeInitials && (
+              <div 
+                className="w-7 h-7 rounded-full bg-gradient-to-br from-purple-500 to-indigo-600 text-white flex items-center justify-center text-xs font-bold shadow-sm ring-2 ring-white"
+                title={`Assigned to ${task.assignee.name}`}
+              >
+                {assigneeInitials}
+              </div>
+            )}
+            
+            {canManage && canMoveRight && (
+              <button 
+                onClick={(e) => { e.stopPropagation(); onMove(task.id, rightStatus); }}
+                className="text-gray-400 hover:text-purple-600 hover:bg-purple-50 rounded p-1 transition-all"
+                title="Move Right"
+              >
+                <FiChevronRight className="w-4 h-4" />
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </div>

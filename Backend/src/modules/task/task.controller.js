@@ -9,7 +9,7 @@ exports.createTask = async (req, res) => {
   try {
     const projectId = parseInt(req.params.projectId);
     const userId = req.userId;
-    const { title, description, priority = "MEDIUM", assigneeId } = req.body;
+    const { title, description, priority = "MEDIUM", assigneeId, deadline } = req.body;
 
     if (!title) {
       return res.status(400).json({ message: "Task title is required" });
@@ -40,15 +40,21 @@ exports.createTask = async (req, res) => {
     }
 
     // 3️⃣ Create task
+    const taskData = {
+      title,
+      description,
+      priority,
+      projectId,
+      assigneeId,
+      createdById: userId
+    };
+
+    if (deadline) {
+      taskData.deadline = new Date(deadline);
+    }
+
     const task = await prisma.task.create({
-      data: {
-        title,
-        description,
-        priority,
-        projectId,
-        assigneeId,
-        createdById: userId
-      },
+      data: taskData,
       include: {
         createdBy: {
           select: { id: true, name: true }
@@ -111,7 +117,7 @@ exports.getTasksByProject = async (req, res) => {
     const skip = (page - 1) * limit;
 
     // Filters
-    const { status, assigneeId, sort = "createdAt", order = "desc" } = req.query;
+    const { status, assigneeId, sort = "createdAt", order = "desc", filter } = req.query;
 
     // 1️⃣ Resolve project → workspace
     const project = await prisma.project.findUnique({
@@ -148,6 +154,23 @@ exports.getTasksByProject = async (req, res) => {
       where.assigneeId = parseInt(assigneeId);
     }
 
+    // Date Filters
+    if (filter === 'overdue') {
+      where.deadline = { lt: new Date() };
+      where.status = { not: 'DONE' };
+    } else if (filter === 'due_today') {
+      const today = new Date();
+      const startOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate());
+      const endOfDay = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 23, 59, 59, 999);
+      
+      where.deadline = { 
+        gte: startOfDay, 
+        lte: endOfDay 
+      };
+    } else if (filter === 'upcoming') {
+      where.deadline = { gt: new Date() };
+    }
+
     // 4️⃣ Fetch tasks
     const tasks = await prisma.task.findMany({
       where,
@@ -156,7 +179,20 @@ exports.getTasksByProject = async (req, res) => {
       orderBy: {
         [sort]: order
       },
-      include: {
+      select: {
+        id: true,
+        title: true,
+        description: true,
+        status: true,
+        priority: true,
+        createdAt: true,
+        updatedAt: true,
+        deadline: true,
+        completedAt: true,
+        projectId: true,
+        assigneeId: true,
+        createdById: true,
+        deletedAt: true,
         createdBy: {
           select: { id: true, name: true }
         },
@@ -167,6 +203,7 @@ exports.getTasksByProject = async (req, res) => {
           select: { 
             id: true, 
             name: true,
+            workspaceId: true, // Needed for auth checks later if any
             createdBy: {
               select: { id: true, name: true }
             }
@@ -174,6 +211,9 @@ exports.getTasksByProject = async (req, res) => {
         }
       }
     });
+
+    console.log('DEBUG: Fetched tasks', tasks.map(t => ({ id: t.id, deadline: t.deadline, completedAt: t.completedAt })));
+
 
     // 5️⃣ Total count for pagination
     const total = await prisma.task.count({ where });
@@ -245,9 +285,16 @@ exports.updateTaskStatus = async (req, res) => {
     }
 
     // 4️⃣ Update status
+    const updateData = { status };
+    if (status === 'DONE') {
+      updateData.completedAt = new Date();
+    } else {
+      updateData.completedAt = null;
+    }
+
     const updatedTask = await prisma.task.update({
       where: { id: taskId },
-      data: { status },
+      data: updateData,
       include: {
         createdBy: {
           select: { id: true, name: true }
@@ -298,7 +345,7 @@ exports.updateTask = async (req, res) => {
   try {
     const taskId = parseInt(req.params.taskId);
     const userId = req.userId;
-    const { title, description, priority } = req.body;
+    const { title, description, priority, deadline } = req.body;
 
     // 1️⃣ Resolve task → project → workspace
     const task = await prisma.task.findUnique({
@@ -334,7 +381,8 @@ exports.updateTask = async (req, res) => {
       data: {
         ...(title && { title }),
         ...(description !== undefined && { description }),
-        ...(priority && { priority })
+        ...(priority && { priority }),
+        ...(deadline !== undefined && { deadline: deadline ? new Date(deadline) : null })
       },
       include: {
         createdBy: {

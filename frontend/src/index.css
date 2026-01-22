@@ -1,32 +1,12 @@
 @import "tailwindcss";
 
 :root {
-  --cursor-x: 50vw;
-  --cursor-y: 50vh;
 }
+
 
 ::selection {
   background-color: #a855f7; /* purple-500 */
   color: white;
-}
-
-.cursor-glow-layer {
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-  z-index: 0; 
-  background: radial-gradient(
-    circle 600px at var(--cursor-x) var(--cursor-y),
-    rgba(168, 85, 247, 0.1),
-    transparent 40%
-  );
-  will-change: background;
-}
-
-@media (max-width: 768px) {
-  .cursor-glow-layer {
-    display: none;
-  }
 }
 
 @keyframes fadeIn {

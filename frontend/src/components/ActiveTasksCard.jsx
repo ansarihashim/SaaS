@@ -160,11 +160,16 @@ export default function ActiveTasksCard({ workspaceId }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {tasks.slice(0, 5).map((task) => (
+          {tasks.slice(0, 5).map((task) => {
+             const deadlineDate = task.deadline ? new Date(task.deadline) : null;
+             const isOverdue = deadlineDate && deadlineDate < new Date();
+             const isDueToday = deadlineDate && new Date().toDateString() === deadlineDate.toDateString();
+            
+             return (
             <div
               key={task.id}
               onClick={() => handleTaskClick(task.id)}
-              className="flex items-center gap-3 p-3 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer group"
+              className={`flex items-center gap-3 p-3 rounded-lg border transition-all cursor-pointer group ${isOverdue ? "border-red-200 bg-red-50/50" : "border-gray-200 hover:border-purple-300 hover:bg-purple-50"}`}
             >
               {/* Priority Badge */}
               <span
@@ -180,9 +185,18 @@ export default function ActiveTasksCard({ workspaceId }) {
                 <p className="font-medium text-gray-900 truncate group-hover:text-purple-700 transition-colors">
                   {task.title}
                 </p>
-                {task.project && (
-                  <p className="text-xs text-gray-500">{task.project.name}</p>
-                )}
+                <div className="flex items-center gap-2 mt-0.5">
+                  {task.project && (
+                    <p className="text-xs text-gray-500">{task.project.name}</p>
+                  )}
+                  {deadlineDate && (
+                     <span className={`text-[10px] font-medium flex items-center gap-1 ${
+                       isOverdue ? "text-red-600" : isDueToday ? "text-yellow-600" : "text-gray-400"
+                     }`}>
+                       • {isOverdue ? "Overdue" : isDueToday ? "Due Today" : deadlineDate.toLocaleDateString()}
+                     </span>
+                  )}
+                </div>
               </div>
 
               {/* Status Badge */}
@@ -204,7 +218,7 @@ export default function ActiveTasksCard({ workspaceId }) {
                 </div>
               )}
             </div>
-          ))}
+          )})}
         </div>
       )}
     </div>
