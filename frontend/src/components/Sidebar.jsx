@@ -20,12 +20,12 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
 
   return (
     <aside 
-      className={`hidden md:flex flex-col bg-white min-h-screen border-r border-gray-200 transition-all duration-300 ease-in-out ${
+      className={`hidden md:flex flex-col bg-white h-screen sticky top-0 border-r border-gray-200 transition-all duration-300 ease-in-out ${
         collapsed ? 'w-16' : 'w-64'
-      } py-6`}
+      } py-6 overflow-hidden`}
     >
       {/* Sidebar Header */}
-      <div className={`flex items-center ${collapsed ? 'flex-col gap-4 justify-center' : 'justify-between px-4'} mb-8 transition-all duration-300`}>
+      <div className={`flex-shrink-0 flex items-center ${collapsed ? 'flex-col gap-4 justify-center' : 'justify-between px-4'} mb-8 transition-all duration-300`}>
         {/* Logo & Title */}
         <div className={`flex items-center gap-2 ${collapsed ? 'justify-center' : ''}`}>
           <img src={logo} alt="TaskFlow" className="w-8 h-8 shrink-0 object-contain" />
@@ -52,7 +52,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
 
       {/* Workspace Selector */}
       {activeWorkspace && (
-        <div className={`mb-6 relative ${collapsed ? 'px-2 flex justify-center' : 'px-4'}`}>
+        <div className={`flex-shrink-0 mb-6 relative ${collapsed ? 'px-2 flex justify-center' : 'px-4'}`}>
           {!collapsed ? (
             <>
               <button
@@ -152,7 +152,7 @@ export default function Sidebar({ collapsed, onToggleCollapse }) {
       </nav>
 
       {/* User Info & Logout */}
-      <div className={`mt-auto pt-4 border-t border-gray-100 ${collapsed ? 'px-2' : 'px-4'}`}>
+      <div className={`flex-shrink-0 mt-auto pt-4 border-t border-gray-100 ${collapsed ? 'px-2' : 'px-4'}`}>
         {!collapsed ? (
           <div className="space-y-1">
             <div className="flex items-center gap-3 px-2 py-2 rounded-lg hover:bg-purple-50 transition-colors cursor-default">

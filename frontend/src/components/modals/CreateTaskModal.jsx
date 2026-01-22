@@ -16,6 +16,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, loading, ta
     priority: 'MEDIUM',
     projectId: '',
     assigneeId: null,
+    deadline: '',
   });
   const [errors, setErrors] = useState({});
 
@@ -28,6 +29,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, loading, ta
         priority: task.priority || 'MEDIUM',
         projectId: task.projectId || task.project?.id || '',
         assigneeId: task.assigneeId || null,
+        deadline: task.deadline ? new Date(task.deadline).toISOString().split('T')[0] : '',
       });
     } else {
       setFormData({
@@ -36,6 +38,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, loading, ta
         priority: 'MEDIUM',
         projectId: '',
         assigneeId: null,
+        deadline: '',
       });
     }
   }, [isEditMode, task, isOpen]);
@@ -85,6 +88,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, loading, ta
       priority: formData.priority,
       projectId: formData.projectId,
       assigneeId: formData.assigneeId,
+      deadline: formData.deadline ? new Date(formData.deadline + 'T23:59:00').toISOString() : null,
     });
   };
 
@@ -95,6 +99,7 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, loading, ta
       priority: 'MEDIUM',
       projectId: '',
       assigneeId: null,
+      deadline: '',
     });
     setErrors({});
     onClose();
@@ -195,6 +200,20 @@ export default function CreateTaskModal({ isOpen, onClose, onSubmit, loading, ta
               <option value="MEDIUM">Medium</option>
               <option value="HIGH">High</option>
             </select>
+          </div>
+
+          {/* Deadline */}
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Deadline (Optional)
+            </label>
+            <input
+              type="date"
+              value={formData.deadline}
+              onChange={(e) => setFormData({ ...formData, deadline: e.target.value })}
+              className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+              disabled={loading}
+            />
           </div>
 
           {/* Actions */}

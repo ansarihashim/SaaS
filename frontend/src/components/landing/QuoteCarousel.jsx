@@ -43,7 +43,7 @@ export default function QuoteCarousel() {
       if (!isHovered && now > autoPlayPauseTill.current) {
         setCurrentIndex((prev) => (prev + 1) % quotes.length);
       }
-    }, 2000);
+    }, 10000);
 
     return () => clearInterval(interval);
   }, [isHovered]);

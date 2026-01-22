@@ -39,8 +39,9 @@ export default function Dashboard() {
         const res = await api.get(
           `/workspaces/${activeWorkspace.id}/dashboard`
         );
-
+        console.log('Dashboard fetch response:', res);
         setStats(res.data.stats);
+
         setOverview(res.data.overview);
       } catch (err) {
         console.error('Dashboard fetch error:', err);

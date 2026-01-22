@@ -15,7 +15,7 @@ export default function HeroSection() {
             </span>
           </h1>
           <p className="text-xl text-gray-400 mb-8 max-w-lg leading-relaxed">
-            The project management tool for teams who want to move fast and break nothing. 
+            TaskFlow,The project management tool for teams who want to move fast and break nothing. 
             Bold, fast, and uncompromising.
           </p>
           <div className="flex flex-col sm:flex-row gap-4">
